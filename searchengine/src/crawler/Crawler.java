@@ -1,5 +1,6 @@
 package crawler;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -7,6 +8,7 @@ import java.util.Set;
 
 import org.htmlparser.util.ParserException;
 
+import storage.PageMap;
 import utilities.PorterStemmer;
 import utilities.StopWordsChecker;
 
@@ -19,7 +21,9 @@ public class Crawler {
     private Queue<String> urlsToVisit;
     private Set<String> visitedUrls;
 
-    Crawler(String startUrl, int maxPagesToCrawl) {
+    private PageMap pageMap;
+
+    Crawler(String startUrl, int maxPagesToCrawl) throws IOException {
         this.maxPagesToCrawl = maxPagesToCrawl;
 
         porter = new PorterStemmer();
@@ -29,9 +33,11 @@ public class Crawler {
         urlsToVisit.add(startUrl);
 
         visitedUrls = new HashSet<String>();
+
+        pageMap = new PageMap();
     }
 
-    public void crawl() {
+    public void crawl() throws IOException {
         int pagesCrawled = 0;
 
         while(pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
@@ -44,6 +50,9 @@ public class Crawler {
                 pagesCrawled += 1;
                 visitedUrls.add(nextUrl);
 
+                Integer pageId = pageMap.getNextId();
+                pageMap.put(nextUrl, pageId);
+
                 for (String link : page.getLinks()) {
                     if (!visitedUrls.contains(link)) {
                         urlsToVisit.add(link);
@@ -51,6 +60,8 @@ public class Crawler {
                 }
             }
         }
+
+        pageMap.print();
     }
 
     private Page getPage(String url) {
@@ -62,8 +73,8 @@ public class Crawler {
         }
     }
 
-    public static void main(String[] args) {
-        Crawler crawler = new Crawler("https://cse.hkust.edu.hk/~dlee/4321/", 5);
+    public static void main(String[] args) throws IOException {
+        Crawler crawler = new Crawler("https://cse.hkust.edu.hk", 5);
         crawler.crawl();
     }
 }
