@@ -18,6 +18,26 @@ class Page {
         this.date = date;
     }
 
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getText() {
+        return this.text;
+    }
+
+    public Vector<String> getLinks() {
+        return this.links;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public Date getDate() {
+        return this.date;
+    }
+
     public void printPage() {
         System.out.println("TITLE:\n" + title + "\n");
         System.out.println("TEXT:\n" + text + "\n");

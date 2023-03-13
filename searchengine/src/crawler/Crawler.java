@@ -11,19 +11,16 @@ import utilities.PorterStemmer;
 import utilities.StopWordsChecker;
 
 public class Crawler {
-    private String startUrl;
-    private int maxPages;
+    private int maxPagesToCrawl;
 
     private PorterStemmer porter;
     private StopWordsChecker stopWords;
 
     private Queue<String> urlsToVisit;
     private Set<String> visitedUrls;
-    
-	Crawler(String startUrl, int maxPages)
-	{
-		this.startUrl = startUrl;
-		this.maxPages = maxPages;
+
+    Crawler(String startUrl, int maxPagesToCrawl) {
+        this.maxPagesToCrawl = maxPagesToCrawl;
 
         porter = new PorterStemmer();
         stopWords = new StopWordsChecker();
@@ -32,20 +29,41 @@ public class Crawler {
         urlsToVisit.add(startUrl);
 
         visitedUrls = new HashSet<String>();
-	}
+    }
 
     public void crawl() {
+        int pagesCrawled = 0;
+
+        while(pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
+            String nextUrl = urlsToVisit.remove();
+            Page page = getPage(nextUrl);
+
+            if (page != null) {
+                System.out.println(nextUrl + ":\n" + page.getTitle() + "\n\n");
+
+                pagesCrawled += 1;
+                visitedUrls.add(nextUrl);
+
+                for (String link : page.getLinks()) {
+                    if (!visitedUrls.contains(link)) {
+                        urlsToVisit.add(link);
+                    }
+                }
+            }
+        }
+    }
+
+    private Page getPage(String url) {
         try {
-            PageParser pageParser = new PageParser(startUrl);
-            Page page = pageParser.fetchPage();
-            page.printPage();
+            PageParser pageParser = new PageParser(url);
+            return pageParser.fetchPage();
         } catch (ParserException e) {
-            e.printStackTrace();
+            return null;
         }
     }
 
     public static void main(String[] args) {
-        Crawler crawler = new Crawler("https://cse.hkust.edu.hk/~dlee/4321/", 30);
+        Crawler crawler = new Crawler("https://cse.hkust.edu.hk/~dlee/4321/", 5);
         crawler.crawl();
     }
 }
