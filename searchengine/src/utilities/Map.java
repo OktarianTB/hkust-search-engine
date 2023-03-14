@@ -15,9 +15,9 @@ public class Map<K, V> {
 		recordManager = RecordManagerFactory.createRecordManager(recordManagerName);
 		long recid = recordManager.getNamedObject(objectName);
 
-		if (recid != 0)
+		if (recid != 0) {
 			hashTable = HTree.load(recordManager, recid);
-		else {
+		} else {
 			hashTable = HTree.createInstance(recordManager);
 			recordManager.setNamedObject(objectName, hashTable.getRecid());
 		}
@@ -30,7 +30,7 @@ public class Map<K, V> {
 
 	@SuppressWarnings("unchecked")
 	public V get(K key) throws IOException {
-		return (V)hashTable.get(key);
+		return (V) hashTable.get(key);
 	}
 
 	public boolean contains(K key) throws IOException {
@@ -41,11 +41,11 @@ public class Map<K, V> {
 		hashTable.put(key, value);
 	}
 
-	public FastIterator keys() throws IOException {
-		return hashTable.keys();
-	}
-
 	public void remove(String key) throws IOException {
 		hashTable.remove(key);
+	}
+
+	public FastIterator keys() throws IOException {
+		return hashTable.keys();
 	}
 }

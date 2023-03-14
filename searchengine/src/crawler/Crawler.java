@@ -40,7 +40,7 @@ public class Crawler {
     public void crawl() throws IOException {
         int pagesCrawled = 0;
 
-        while(pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
+        while (pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
             String nextUrl = urlsToVisit.remove();
             Page page = getPage(nextUrl);
 
@@ -50,8 +50,10 @@ public class Crawler {
                 pagesCrawled += 1;
                 visitedUrls.add(nextUrl);
 
-                Integer pageId = pageMap.getNextId();
-                pageMap.put(nextUrl, pageId);
+                if (!pageMap.contains(nextUrl)) {
+                    Integer pageId = pageMap.getNextId();
+                    pageMap.put(nextUrl, pageId);
+                }
 
                 for (String link : page.getLinks()) {
                     if (!visitedUrls.contains(link)) {
@@ -62,6 +64,7 @@ public class Crawler {
         }
 
         pageMap.print();
+        finalize();
     }
 
     private Page getPage(String url) {
@@ -71,6 +74,10 @@ public class Crawler {
         } catch (ParserException e) {
             return null;
         }
+    }
+
+    public void finalize() throws IOException {
+        pageMap.finalize();
     }
 
     public static void main(String[] args) throws IOException {

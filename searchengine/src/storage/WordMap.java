@@ -6,14 +6,14 @@ import jdbm.helper.FastIterator;
 import utilities.Map;
 
 /*
- * PageMap is a HashMap from Page URL => Page ID
+ * WordMap is a HashMap from Page URL => Page ID
  */
-public class PageMap extends Map<String, Integer> {
-    static final String PAGE_MAP_RECORD_NAME = "PageMap";
-    static final String PAGE_MAP_OBJECT_NAME = "PageMap";
+public class WordMap extends Map<String, Integer> {
+    static final String PAGE_MAP_RECORD_NAME = "WordMap";
+    static final String PAGE_MAP_OBJECT_NAME = "WordMap";
     static final String CURRENT_MAX_ID_KEYWORD = "CURRENT_MAX_ID_KEYWORD";
 
-    public PageMap() throws IOException {
+    public WordMap() throws IOException {
         super(PAGE_MAP_RECORD_NAME, PAGE_MAP_OBJECT_NAME);
 
         if (!contains(CURRENT_MAX_ID_KEYWORD)) {
