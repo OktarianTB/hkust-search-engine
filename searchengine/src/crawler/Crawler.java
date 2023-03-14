@@ -9,16 +9,16 @@ import java.util.Set;
 import org.htmlparser.util.ParserException;
 
 import storage.Storage;
-import utilities.PorterStemmer;
-import utilities.StopWordsChecker;
+// import utilities.PorterStemmer;
+// import utilities.StopWordsChecker;
 
 public class Crawler {
     private final static String STORAGE_NAME = "search_engine";
 
     private int maxPagesToCrawl;
 
-    private PorterStemmer porter;
-    private StopWordsChecker stopWords;
+    // private PorterStemmer porter;
+    // private StopWordsChecker stopWords;
 
     private Queue<String> urlsToVisit;
     private Set<String> visitedUrls;
@@ -28,8 +28,8 @@ public class Crawler {
     Crawler(String startUrl, int maxPagesToCrawl) throws IOException {
         this.maxPagesToCrawl = maxPagesToCrawl;
 
-        porter = new PorterStemmer();
-        stopWords = new StopWordsChecker();
+        // porter = new PorterStemmer();
+        // stopWords = new StopWordsChecker();
 
         urlsToVisit = new LinkedList<String>();
         urlsToVisit.add(startUrl);

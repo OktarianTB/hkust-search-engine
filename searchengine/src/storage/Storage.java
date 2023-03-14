@@ -16,7 +16,6 @@ public class Storage {
     private AdjacencyMap adjacencyMap;
     private PropertiesMap propertiesMap;
 
-
     public Storage(String recordManagerName) throws IOException {
         recordManager = RecordManagerFactory.createRecordManager(recordManagerName);
 
@@ -30,12 +29,10 @@ public class Storage {
     }
 
     public void commitAndClose() throws IOException {
-        wordMap.commitAndClose();
-        documentMap.commitAndClose();
-        invertedIndexMap.commitAndClose();
-        forwardIndexMap.commitAndClose();
-        adjacencyMap.commitAndClose();
-        propertiesMap.commitAndClose();
+        documentMap.print();
+
+        recordManager.commit();
+		recordManager.close();
     }
 
     public Integer getDocId(String url) throws IOException {
@@ -56,5 +53,4 @@ public class Storage {
         }
         return true;
     }
-
 }

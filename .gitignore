@@ -26,3 +26,7 @@ hs_err_pid*
 # vscode
 .vscode
 .metals
+
+# jdbm
+*.lg
+*.db

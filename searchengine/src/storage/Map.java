@@ -7,12 +7,9 @@ import jdbm.htree.HTree;
 import java.io.IOException;
 
 public class Map<K, V> {
-	private RecordManager recordManager;
 	protected HTree hashTable;
 
 	public Map(RecordManager recordManager, String objectName) throws IOException {
-		this.recordManager = recordManager;
-
 		long recid = recordManager.getNamedObject(objectName);
 		if (recid != 0) {
 			hashTable = HTree.load(recordManager, recid);
@@ -20,11 +17,6 @@ public class Map<K, V> {
 			hashTable = HTree.createInstance(recordManager);
 			recordManager.setNamedObject(objectName, hashTable.getRecid());
 		}
-	}
-
-	public void commitAndClose() throws IOException {
-		recordManager.commit();
-		recordManager.close();
 	}
 
 	@SuppressWarnings("unchecked")
