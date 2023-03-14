@@ -15,20 +15,26 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
 class PageParser {
+    private String url;
     private Parser parser;
 
     PageParser(String url) throws ParserException {
+        this.url = url;
         parser = new Parser(url);
     }
 
-    public Page fetchPage() throws ParserException {
-        String text = getPageText();
-        Vector<String> links = getPageLinks();
-        String title = getPageTitle();
-        int size = getPageSize(text);
-        Date date = getPageDate();
-
-        return new Page(title, text, links, size, date);
+    public Page fetchPage() {
+        try {
+            String text = getPageText();
+            Vector<String> links = getPageLinks();
+            String title = getPageTitle();
+            int size = getPageSize(text);
+            Date lastModifiedAt = getPageLastModifiedAt();
+    
+            return new Page(url, title, text, links, size, lastModifiedAt);
+        } catch (ParserException ignore) {
+            return null;
+        }
     }
 
     private String getPageText() throws ParserException {
@@ -85,13 +91,13 @@ class PageParser {
         return contentLength;
     }
 
-    public Date getPageDate() {
-        long timestamp;
-        timestamp = parser.getConnection().getLastModified();
-        if (timestamp <= 0) {
-            timestamp = parser.getConnection().getDate();
+    public Date getPageLastModifiedAt() {
+        long lastModifiedAt;
+        lastModifiedAt = parser.getConnection().getLastModified();
+        if (lastModifiedAt <= 0) {
+            lastModifiedAt = parser.getConnection().getDate();
         }
-        return new Date(timestamp);
+        return new Date(lastModifiedAt);
     }
 
     public static void main(String[] args) throws ParserException {

@@ -3,18 +3,17 @@ package storage;
 import java.io.IOException;
 import java.util.List;
 
+import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
-import utilities.Map;
 
 /*
  * InvertedIndexMap is a HashMap from Page ID => List of Postings
  */
 public class InvertedIndexMap extends Map<Integer, List<Posting>> {
-    static final String PAGE_MAP_RECORD_NAME = "InvertedIndexMap";
     static final String PAGE_MAP_OBJECT_NAME = "InvertedIndexMap";
 
-    public InvertedIndexMap() throws IOException {
-        super(PAGE_MAP_RECORD_NAME, PAGE_MAP_OBJECT_NAME);
+    public InvertedIndexMap(RecordManager recordManager) throws IOException {
+        super(recordManager, PAGE_MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {

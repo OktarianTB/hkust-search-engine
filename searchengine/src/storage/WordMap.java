@@ -2,19 +2,18 @@ package storage;
 
 import java.io.IOException;
 
+import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
-import utilities.Map;
 
 /*
  * WordMap is a HashMap from Page URL => Page ID
  */
 public class WordMap extends Map<String, Integer> {
-    static final String PAGE_MAP_RECORD_NAME = "WordMap";
     static final String PAGE_MAP_OBJECT_NAME = "WordMap";
     static final String CURRENT_MAX_ID_KEYWORD = "CURRENT_MAX_ID_KEYWORD";
 
-    public WordMap() throws IOException {
-        super(PAGE_MAP_RECORD_NAME, PAGE_MAP_OBJECT_NAME);
+    public WordMap(RecordManager recordManager) throws IOException {
+        super(recordManager, PAGE_MAP_OBJECT_NAME);
 
         if (!contains(CURRENT_MAX_ID_KEYWORD)) {
             put(CURRENT_MAX_ID_KEYWORD, 0);

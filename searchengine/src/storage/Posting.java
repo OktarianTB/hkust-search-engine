@@ -1,16 +1,16 @@
 package storage;
 
 public class Posting {
-    private Integer pageId;
+    private Integer docId;
     private int frequency;
 
-    public Posting(Integer pageId, int frequency) {
-        this.pageId = pageId;
+    public Posting(Integer docId, int frequency) {
+        this.docId = docId;
         this.frequency = frequency;
     }
 
-    public Integer getPageId() {
-        return this.pageId;
+    public Integer getDocId() {
+        return this.docId;
     }
 
     public int getFrequency() {
@@ -20,7 +20,7 @@ public class Posting {
     @Override
     public String toString() {
         return "{" +
-                " pageId='" + getPageId() + "'" +
+                " docId='" + getDocId() + "'" +
                 ", frequency='" + getFrequency() + "'" +
                 "}";
     }

@@ -1,7 +1,6 @@
-package utilities;
+package storage;
 
 import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
 import jdbm.helper.FastIterator;
 import jdbm.htree.HTree;
 
@@ -11,10 +10,10 @@ public class Map<K, V> {
 	private RecordManager recordManager;
 	protected HTree hashTable;
 
-	public Map(String recordManagerName, String objectName) throws IOException {
-		recordManager = RecordManagerFactory.createRecordManager(recordManagerName);
-		long recid = recordManager.getNamedObject(objectName);
+	public Map(RecordManager recordManager, String objectName) throws IOException {
+		this.recordManager = recordManager;
 
+		long recid = recordManager.getNamedObject(objectName);
 		if (recid != 0) {
 			hashTable = HTree.load(recordManager, recid);
 		} else {
@@ -23,7 +22,7 @@ public class Map<K, V> {
 		}
 	}
 
-	public void finalize() throws IOException {
+	public void commitAndClose() throws IOException {
 		recordManager.commit();
 		recordManager.close();
 	}

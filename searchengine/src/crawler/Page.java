@@ -3,19 +3,27 @@ package crawler;
 import java.util.Date;
 import java.util.Vector;
 
+import storage.Properties;
+
 class Page {
+    private String url;
     private String title;
     private String text;
     private Vector<String> links;
     private int size;
-    private Date date;
+    private Date lastModifiedAt;
 
-    Page(String title, String text, Vector<String> links, int size, Date date) {
+    Page(String url, String title, String text, Vector<String> links, int size, Date lastModifiedAt) {
+        this.url = url;
         this.title = title;
         this.text = text;
         this.links = links;
         this.size = size;
-        this.date = date;
+        this.lastModifiedAt = lastModifiedAt;
+    }
+
+    public String getUrl() {
+        return this.url;
     }
 
     public String getTitle() {
@@ -34,18 +42,23 @@ class Page {
         return this.size;
     }
 
-    public Date getDate() {
-        return this.date;
+    public Date getLastModifiedAt() {
+        return this.lastModifiedAt;
     }
 
-    public void printPage() {
-        System.out.println("TITLE:\n" + title + "\n");
-        System.out.println("TEXT:\n" + text + "\n");
-        System.out.println("LINKS:\n");
-        for (String l : links) {
-            System.out.println(l);
-        }
-        System.out.println("\nSIZE: " + size + "\n");
-        System.out.println("DATE: " + date + "\n");
+    public Properties toProperties() {
+        return new Properties(url, title, size, lastModifiedAt);
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+            " url='" + getUrl() + "'" +
+            ", title='" + getTitle() + "'" +
+            ", text='" + getText() + "'" +
+            ", links='" + getLinks() + "'" +
+            ", size='" + getSize() + "'" +
+            ", lastModifiedAt='" + getLastModifiedAt() + "'" +
+            "}";
+    }    
 }

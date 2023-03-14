@@ -1,20 +1,18 @@
 package storage;
 
 import java.io.IOException;
-import java.util.List;
 
+import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
-import utilities.Map;
 
 /*
  * AdjacencyMap is a HashMap from Child Page ID => List of Parent Page IDs
  */
-public class AdjacencyMap extends Map<Integer, List<Integer>> {
-    static final String PAGE_MAP_RECORD_NAME = "AdjacencyMap";
+public class AdjacencyMap extends Map<Integer, Relationship> {
     static final String PAGE_MAP_OBJECT_NAME = "AdjacencyMap";
 
-    public AdjacencyMap() throws IOException {
-        super(PAGE_MAP_RECORD_NAME, PAGE_MAP_OBJECT_NAME);
+    public AdjacencyMap(RecordManager recordManager) throws IOException {
+        super(recordManager, PAGE_MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {

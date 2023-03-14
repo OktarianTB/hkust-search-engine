@@ -8,11 +8,13 @@ import java.util.Set;
 
 import org.htmlparser.util.ParserException;
 
-import storage.PageMap;
+import storage.Storage;
 import utilities.PorterStemmer;
 import utilities.StopWordsChecker;
 
 public class Crawler {
+    private final static String STORAGE_NAME = "search_engine";
+
     private int maxPagesToCrawl;
 
     private PorterStemmer porter;
@@ -21,7 +23,7 @@ public class Crawler {
     private Queue<String> urlsToVisit;
     private Set<String> visitedUrls;
 
-    private PageMap pageMap;
+    private Storage storage;
 
     Crawler(String startUrl, int maxPagesToCrawl) throws IOException {
         this.maxPagesToCrawl = maxPagesToCrawl;
@@ -34,25 +36,27 @@ public class Crawler {
 
         visitedUrls = new HashSet<String>();
 
-        pageMap = new PageMap();
+        // initialize all storage maps
+        storage = new Storage(STORAGE_NAME);
     }
 
-    public void crawl() throws IOException {
+    public void crawlAndIndex() throws IOException {
         int pagesCrawled = 0;
 
         while (pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
-            String nextUrl = urlsToVisit.remove();
-            Page page = getPage(nextUrl);
+            String url = urlsToVisit.remove();
+            Page page = getPage(url);
 
             if (page != null) {
-                System.out.println(nextUrl + ":\n" + page.getTitle() + "\n\n");
+                System.out.println(url + ":\n" + page.getTitle() + "\n\n");
 
                 pagesCrawled += 1;
-                visitedUrls.add(nextUrl);
+                visitedUrls.add(url);
 
-                if (!pageMap.contains(nextUrl)) {
-                    Integer pageId = pageMap.getNextId();
-                    pageMap.put(nextUrl, pageId);
+                Integer docId = storage.getDocId(url);
+
+                if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
+                    // update maps
                 }
 
                 for (String link : page.getLinks()) {
@@ -63,8 +67,7 @@ public class Crawler {
             }
         }
 
-        pageMap.print();
-        finalize();
+        storage.commitAndClose();
     }
 
     private Page getPage(String url) {
@@ -76,12 +79,8 @@ public class Crawler {
         }
     }
 
-    public void finalize() throws IOException {
-        pageMap.finalize();
-    }
-
     public static void main(String[] args) throws IOException {
         Crawler crawler = new Crawler("https://cse.hkust.edu.hk", 5);
-        crawler.crawl();
+        crawler.crawlAndIndex();
     }
 }

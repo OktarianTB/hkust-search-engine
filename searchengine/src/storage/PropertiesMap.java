@@ -2,18 +2,17 @@ package storage;
 
 import java.io.IOException;
 
+import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
-import utilities.Map;
 
 /*
  * PropertiesMap is a HashMap from Page ID => Page Properties
  */
 public class PropertiesMap extends Map<Integer, Properties> {
-    static final String PAGE_MAP_RECORD_NAME = "PropertiesMap";
     static final String PAGE_MAP_OBJECT_NAME = "PropertiesMap";
 
-    public PropertiesMap() throws IOException {
-        super(PAGE_MAP_RECORD_NAME, PAGE_MAP_OBJECT_NAME);
+    public PropertiesMap(RecordManager recordManager) throws IOException {
+        super(recordManager, PAGE_MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {
