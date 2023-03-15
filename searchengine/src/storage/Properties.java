@@ -1,8 +1,9 @@
 package storage;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Properties {
+public class Properties implements Serializable {
     private String url;
     private String title;
     private int size;

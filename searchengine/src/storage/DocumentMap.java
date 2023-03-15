@@ -33,11 +33,13 @@ public class DocumentMap extends Map<String, Integer> {
     }
 
     public void print() throws IOException {
+        System.out.println("--- Document Map ---");
         FastIterator iterator = keys();
         String key = (String) iterator.next();
         while (key != null) {
             System.out.println(key + " -> " + get(key));
             key = (String) iterator.next();
         }
+        System.out.println();
     }
 }

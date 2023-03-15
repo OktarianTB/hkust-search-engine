@@ -1,6 +1,8 @@
 package storage;
 
-public class Posting {
+import java.io.Serializable;
+
+public class Posting implements Serializable {
     private Integer docId;
     private int frequency;
 

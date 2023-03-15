@@ -30,9 +30,10 @@ public class Storage {
 
     public void commitAndClose() throws IOException {
         documentMap.print();
+        propertiesMap.print();
 
         recordManager.commit();
-		recordManager.close();
+        recordManager.close();
     }
 
     public Integer getDocId(String url) throws IOException {
@@ -47,10 +48,12 @@ public class Storage {
     public boolean docNeedsUpdating(Integer docId, Date newLastModifiedAt) throws IOException {
         Properties properties = propertiesMap.get(docId);
         if (properties != null) {
-            if (!newLastModifiedAt.after(properties.getLastModifiedAt())) {
-                return false;
-            }
+            return newLastModifiedAt.after(properties.getLastModifiedAt());
         }
         return true;
+    }
+
+    public void updateDocument(Integer docId, Properties properties) throws IOException {
+        propertiesMap.put(docId, properties);
     }
 }

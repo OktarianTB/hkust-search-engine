@@ -16,11 +16,13 @@ public class PropertiesMap extends Map<Integer, Properties> {
     }
 
     public void print() throws IOException {
+        System.out.println("--- Properties Map ---");
         FastIterator iterator = keys();
         Integer key = (Integer) iterator.next();
         while (key != null) {
             System.out.println(key + " -> " + get(key));
             key = (Integer) iterator.next();
         }
+        System.out.println();
     }
 }

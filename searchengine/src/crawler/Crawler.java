@@ -56,10 +56,11 @@ public class Crawler {
                 Integer docId = storage.getDocId(url);
 
                 if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
-                    // update maps
+                    storage.updateDocument(docId, page.toProperties());
                 }
 
                 for (String link : page.getLinks()) {
+                    // todo: update adjacency list
                     if (!visitedUrls.contains(link)) {
                         urlsToVisit.add(link);
                     }
