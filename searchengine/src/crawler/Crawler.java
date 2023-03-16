@@ -1,24 +1,27 @@
 package crawler;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.htmlparser.util.ParserException;
 
 import storage.Storage;
-// import utilities.PorterStemmer;
-// import utilities.StopWordsChecker;
+import utilities.PorterStemmer;
+import utilities.StopWordsChecker;
 
 public class Crawler {
     private final static String STORAGE_NAME = "search_engine";
 
     private int maxPagesToCrawl;
 
-    // private PorterStemmer porter;
-    // private StopWordsChecker stopWords;
+    private PorterStemmer stemmer;
+    private StopWordsChecker stopWords;
 
     private Queue<String> urlsToVisit;
     private Set<String> visitedUrls;
@@ -28,8 +31,8 @@ public class Crawler {
     Crawler(String startUrl, int maxPagesToCrawl) throws IOException {
         this.maxPagesToCrawl = maxPagesToCrawl;
 
-        // porter = new PorterStemmer();
-        // stopWords = new StopWordsChecker();
+        stemmer = new PorterStemmer();
+        stopWords = new StopWordsChecker();
 
         urlsToVisit = new LinkedList<String>();
         urlsToVisit.add(startUrl);
@@ -56,7 +59,8 @@ public class Crawler {
                 Integer docId = storage.getDocId(url);
 
                 if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
-                    storage.updateDocument(docId, page.toProperties());
+                    List<String> words = getTransformedWords(page);
+                    storage.updateDocument(docId, page.toProperties(), words);
                 }
 
                 for (String link : page.getLinks()) {
@@ -69,6 +73,25 @@ public class Crawler {
         }
 
         storage.commitAndClose();
+    }
+
+    private List<String> getTransformedWords(Page page) {
+        List<String> words = new ArrayList<String>();
+        StringTokenizer stringTokenizer = new StringTokenizer(page.getText());
+
+		while (stringTokenizer.hasMoreTokens()) {
+            String word = stringTokenizer.nextToken().toLowerCase();
+
+            // ignore stop words
+            if (stopWords.isStopWord(word)) {
+                continue;
+            }
+
+            // Stem word and add to output list
+			words.add(stemmer.stem(word));
+		}
+
+        return words;
     }
 
     private Page getPage(String url) {

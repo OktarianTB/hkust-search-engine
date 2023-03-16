@@ -377,7 +377,6 @@ public class PorterStemmer {
     }
 
     public String stem(String str) {
-        str = str.toLowerCase();
         str = Clean(str);
 
         if ((str != "") && (str.length() > 2)) {

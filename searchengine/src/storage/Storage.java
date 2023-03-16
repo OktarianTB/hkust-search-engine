@@ -2,6 +2,9 @@ package storage;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
@@ -31,6 +34,7 @@ public class Storage {
     public void commitAndClose() throws IOException {
         documentMap.print();
         propertiesMap.print();
+        forwardIndexMap.print();
 
         recordManager.commit();
         recordManager.close();
@@ -53,7 +57,12 @@ public class Storage {
         return true;
     }
 
-    public void updateDocument(Integer docId, Properties properties) throws IOException {
+    public void updateDocument(Integer docId, Properties properties, List<String> words) throws IOException {
+        // update properties map
         propertiesMap.put(docId, properties);
+
+        // update forward index map 
+        Set<String> uniqueWords = new HashSet<String>(words);
+        forwardIndexMap.put(docId, uniqueWords);
     }
 }
