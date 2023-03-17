@@ -2,8 +2,9 @@ package crawler;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -26,7 +27,7 @@ class PageParser {
     public Page fetchPage() {
         try {
             String text = getPageText();
-            Vector<String> links = getPageLinks();
+            List<String> links = getPageLinks();
             String title = getPageTitle();
             int size = getPageSize(text);
             Date lastModifiedAt = getPageLastModifiedAt();
@@ -46,10 +47,10 @@ class PageParser {
         return text;
     }
 
-    private Vector<String> getPageLinks() throws ParserException {
+    private List<String> getPageLinks() throws ParserException {
         NodeFilter linkFilter = new NodeClassFilter(LinkTag.class);
         NodeList linkList = parser.extractAllNodesThatMatch(linkFilter);
-        Vector<String> links = new Vector<String>();
+        List<String> links = new ArrayList<String>();
         LinkTag linkTag;
 
         for (int i = 0; i < linkList.size(); i++) {

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import jdbm.RecordManager;
@@ -42,8 +41,9 @@ public class Storage {
         propertiesMap.print();
         // forwardIndexMap.print();
         // wordMap.print();
-        titleInvertedIndexMap.print();
-        bodyInvertedIndexMap.print();
+        //titleInvertedIndexMap.print();
+        //bodyInvertedIndexMap.print();
+        adjacencyMap.print();
 
         recordManager.commit();
         recordManager.close();
@@ -133,6 +133,31 @@ public class Storage {
                 bodyInvertedIndexMap.put(wordId, newPostings);
             } else {
                 bodyInvertedIndexMap.put(wordId, List.of(newPosting));
+            }
+        }
+    }
+
+    public void updateRelationships(Integer parentDocId, Set<Integer> childDocIds)
+            throws IOException {
+        // update adjacency map of parent
+        Relationship parentRelationship = adjacencyMap.get(parentDocId);
+        if (parentRelationship != null) {
+            adjacencyMap.put(parentDocId, new Relationship(parentRelationship.getParentDocIds(), childDocIds));
+        } else {
+            adjacencyMap.put(parentDocId, new Relationship(Set.of(), childDocIds));
+        }
+
+        // update adjacency map of children
+        for (Integer childDocId : childDocIds) {
+            Relationship childRelationship = adjacencyMap.get(childDocId);
+            if (childRelationship != null) {
+                Set<Integer> newParentDocIds = childRelationship.getParentDocIds().stream()
+                        .filter(docId -> !docId.equals(parentDocId)).collect(Collectors.toSet());
+                newParentDocIds.add(parentDocId);
+
+                adjacencyMap.put(childDocId, new Relationship(newParentDocIds, childRelationship.getChildDocIds()));
+            } else {
+                adjacencyMap.put(childDocId, new Relationship(Set.of(parentDocId), Set.of()));
             }
         }
     }

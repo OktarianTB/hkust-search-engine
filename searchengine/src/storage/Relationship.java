@@ -1,29 +1,30 @@
 package storage;
 
-import java.util.List;
+import java.io.Serializable;
+import java.util.Set;
 
-public class Relationship {
-    private List<Integer> parents;
-    private List<Integer> children;
+public class Relationship implements Serializable {
+    private Set<Integer> parentDocIds;
+    private Set<Integer> childDocIds;
 
-    public Relationship(List<Integer> parents, List<Integer> children) {
-        this.parents = parents;
-        this.children = children;
+    public Relationship(Set<Integer> parentDocIds, Set<Integer> childDocIds) {
+        this.parentDocIds = parentDocIds;
+        this.childDocIds = childDocIds;
     }
 
-    private List<Integer> getParents() {
-        return this.parents;
+    public Set<Integer> getParentDocIds() {
+        return this.parentDocIds;
     }
 
-    private List<Integer> getChildren() {
-        return this.children;
+    public Set<Integer> getChildDocIds() {
+        return this.childDocIds;
     }
 
     @Override
     public String toString() {
         return "{" +
-                " parents='" + getParents() + "'" +
-                ", children='" + getChildren() + "'" +
+                " parentDocIds='" + getParentDocIds() + "'" +
+                ", childDocIds='" + getChildDocIds() + "'" +
                 "}";
     }
 }

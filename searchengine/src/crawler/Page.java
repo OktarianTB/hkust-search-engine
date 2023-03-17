@@ -1,7 +1,7 @@
 package crawler;
 
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 
 import storage.Properties;
 
@@ -9,11 +9,11 @@ class Page {
     private String url;
     private String title;
     private String text;
-    private Vector<String> links;
+    private List<String> links;
     private int size;
     private Date lastModifiedAt;
 
-    Page(String url, String title, String text, Vector<String> links, int size, Date lastModifiedAt) {
+    Page(String url, String title, String text, List<String> links, int size, Date lastModifiedAt) {
         this.url = url;
         this.title = title;
         this.text = text;
@@ -34,7 +34,7 @@ class Page {
         return this.text;
     }
 
-    public Vector<String> getLinks() {
+    public List<String> getLinks() {
         return this.links;
     }
 

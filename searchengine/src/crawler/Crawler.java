@@ -8,12 +8,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import org.htmlparser.util.ParserException;
 
-import storage.Posting;
 import storage.Storage;
 import utilities.PorterStemmer;
 import utilities.StopWordsChecker;
@@ -74,12 +71,15 @@ public class Crawler {
                     storage.updateDocument(docId, page.toProperties(), titleWords, bodyWords);
                 }
 
+                Set<Integer> linksDocIds = new HashSet<Integer>();
                 for (String link : page.getLinks()) {
-                    // todo: update adjacency list
+                    linksDocIds.add(storage.getDocId(link));
+
                     if (!visitedUrls.contains(link)) {
                         urlsToVisit.add(link);
                     }
                 }
+                storage.updateRelationships(docId, linksDocIds);
             }
         }
     }
