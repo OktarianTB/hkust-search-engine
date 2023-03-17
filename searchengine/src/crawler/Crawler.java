@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.htmlparser.util.ParserException;
 
+import storage.Posting;
 import storage.Storage;
 import utilities.PorterStemmer;
 import utilities.StopWordsChecker;
@@ -41,9 +44,15 @@ public class Crawler {
 
         // initialize all storage maps
         storage = new Storage(STORAGE_NAME);
+
+        // crawl and index
+        crawlAndIndex();
+
+        // commit db changes
+        storage.commitAndClose();
     }
 
-    public void crawlAndIndex() throws IOException {
+    private void crawlAndIndex() throws IOException {
         int pagesCrawled = 0;
 
         while (pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
@@ -59,8 +68,10 @@ public class Crawler {
                 Integer docId = storage.getDocId(url);
 
                 if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
-                    List<String> words = getTransformedWords(page);
-                    storage.updateDocument(docId, page.toProperties(), words);
+                    List<String> titleWords = getTransformedWords(page.getTitle());
+                    List<String> bodyWords = getTransformedWords(page.getText());
+
+                    storage.updateDocument(docId, page.toProperties(), titleWords, bodyWords);
                 }
 
                 for (String link : page.getLinks()) {
@@ -71,25 +82,23 @@ public class Crawler {
                 }
             }
         }
-
-        storage.commitAndClose();
     }
 
-    private List<String> getTransformedWords(Page page) {
+    private List<String> getTransformedWords(String text) {
         List<String> words = new ArrayList<String>();
-        StringTokenizer stringTokenizer = new StringTokenizer(page.getText());
+        StringTokenizer stringTokenizer = new StringTokenizer(text);
 
-		while (stringTokenizer.hasMoreTokens()) {
+        while (stringTokenizer.hasMoreTokens()) {
             String word = stringTokenizer.nextToken().toLowerCase();
 
             // ignore stop words
-            if (stopWords.isStopWord(word)) {
+            if (stopWords.isStopWord(word) || word.length() == 0) {
                 continue;
             }
 
             // Stem word and add to output list
-			words.add(stemmer.stem(word));
-		}
+            words.add(stemmer.stem(word));
+        }
 
         return words;
     }
@@ -104,7 +113,6 @@ public class Crawler {
     }
 
     public static void main(String[] args) throws IOException {
-        Crawler crawler = new Crawler("https://cse.hkust.edu.hk", 5);
-        crawler.crawlAndIndex();
+        new Crawler("https://cse.hkust.edu.hk", 3);
     }
 }

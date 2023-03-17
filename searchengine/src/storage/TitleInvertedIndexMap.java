@@ -7,16 +7,17 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * InvertedIndexMap is a HashMap from Page ID => List of Postings
+ * TitleInvertedIndexMap is a HashMap from Doc ID => List of Title Postings
  */
-public class InvertedIndexMap extends Map<Integer, List<Posting>> {
-    static final String PAGE_MAP_OBJECT_NAME = "InvertedIndexMap";
+public class TitleInvertedIndexMap extends Map<Integer, List<Posting>> {
+    static final String PAGE_MAP_OBJECT_NAME = "TitleInvertedIndexMap";
 
-    public InvertedIndexMap(RecordManager recordManager) throws IOException {
+    public TitleInvertedIndexMap(RecordManager recordManager) throws IOException {
         super(recordManager, PAGE_MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {
+        System.out.println("--- Title Invertex Index Map ---");
         FastIterator iterator = keys();
         Integer key = (Integer) iterator.next();
         while (key != null) {

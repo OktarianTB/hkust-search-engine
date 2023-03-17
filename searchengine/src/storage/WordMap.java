@@ -6,7 +6,7 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * WordMap is a HashMap from Page URL => Page ID
+ * WordMap is a HashMap from Word => Word ID
  */
 public class WordMap extends Map<String, Integer> {
     static final String PAGE_MAP_OBJECT_NAME = "WordMap";
@@ -22,17 +22,18 @@ public class WordMap extends Map<String, Integer> {
 
     // Returns the next available ID to use and updates internally
     // Non-deterministic so to be used with caution
-    public Integer getNextId() throws IOException {
+    public Integer getNextWordId() throws IOException {
         // get current max ID
-        Integer nextId = get(CURRENT_MAX_ID_KEYWORD) + 1;
+        Integer nextWordId = get(CURRENT_MAX_ID_KEYWORD) + 1;
 
         // update to new max ID
-        put(CURRENT_MAX_ID_KEYWORD, nextId);
+        put(CURRENT_MAX_ID_KEYWORD, nextWordId);
 
-        return nextId;
+        return nextWordId;
     }
 
     public void print() throws IOException {
+        System.out.println("--- Word Map ---");
         FastIterator iterator = keys();
         String key = (String) iterator.next();
         while (key != null) {

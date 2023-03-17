@@ -1,23 +1,23 @@
 package storage;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 
 import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * ForwardIndexMap is a HashMap from Doc ID => Page Keywords (Word IDs)
+ * BodyInvertedIndexMap is a HashMap from Doc ID => List of Body Postings
  */
-public class ForwardIndexMap extends Map<Integer, Set<Integer>> {
-    static final String PAGE_MAP_OBJECT_NAME = "ForwardIndexMap";
+public class BodyInvertedIndexMap extends Map<Integer, List<Posting>> {
+    static final String PAGE_MAP_OBJECT_NAME = "BodyInvertedIndexMap";
 
-    public ForwardIndexMap(RecordManager recordManager) throws IOException {
+    public BodyInvertedIndexMap(RecordManager recordManager) throws IOException {
         super(recordManager, PAGE_MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {
-        System.out.println("--- Forward Index Map ---");
+        System.out.println("--- Body Invertex Index Map ---");
         FastIterator iterator = keys();
         Integer key = (Integer) iterator.next();
         while (key != null) {
