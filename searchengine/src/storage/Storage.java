@@ -6,17 +6,22 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
+import jdbm.helper.FastIterator;
+import utilities.Pair;
+import utilities.Result;
 
 public class Storage {
     private RecordManager recordManager;
 
     private WordMap wordMap;
     private DocumentMap documentMap;
+    private DocumentForwardMap documentForwardMap;
     private TitleInvertedIndexMap titleInvertedIndexMap;
     private BodyInvertedIndexMap bodyInvertedIndexMap;
     private ForwardIndexMap forwardIndexMap;
@@ -29,6 +34,7 @@ public class Storage {
         // initialize all storage maps
         wordMap = new WordMap(recordManager);
         documentMap = new DocumentMap(recordManager);
+        documentForwardMap = new DocumentForwardMap(recordManager);
         titleInvertedIndexMap = new TitleInvertedIndexMap(recordManager);
         bodyInvertedIndexMap = new BodyInvertedIndexMap(recordManager);
         forwardIndexMap = new ForwardIndexMap(recordManager);
@@ -38,15 +44,70 @@ public class Storage {
 
     public void commitAndClose() throws IOException {
         documentMap.print();
-        propertiesMap.print();
+        // propertiesMap.print();
         // forwardIndexMap.print();
         // wordMap.print();
-        //titleInvertedIndexMap.print();
-        //bodyInvertedIndexMap.print();
-        adjacencyMap.print();
+        // titleInvertedIndexMap.print();
+        // bodyInvertedIndexMap.print();
+        // adjacencyMap.print();
 
         recordManager.commit();
         recordManager.close();
+    }
+
+    public List<Result> getResults() throws IOException {
+        List<Result> results = new ArrayList<Result>();
+
+        FastIterator iterator = propertiesMap.keys();
+        Integer docId = (Integer) iterator.next();
+        while (docId != null) {
+            final int innerDocId = docId;
+
+            Properties properties = propertiesMap.get(docId);
+
+            Relationship relationship = adjacencyMap.get(docId);
+            List<String> childLinks = new ArrayList<String>();
+            for (Integer childDocId : relationship.getChildDocIds()) {
+                childLinks.add(documentForwardMap.get(childDocId));
+            }
+
+            List<Pair> pairs = new ArrayList<Pair>();
+            Set<String> words = forwardIndexMap.get(docId);
+            for (String word : words) {
+                Integer wordId = wordMap.get(word);
+                int frequency = 0;
+
+                List<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
+                if (titlePostings != null) {
+                    Optional<Posting> titlePosting = titlePostings.stream()
+                            .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
+                    if (titlePosting.isPresent()) {
+                        frequency += titlePosting.get().getFrequency();
+                    }
+                }
+
+                List<Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
+                if (bodyPostings != null) {
+                    Optional<Posting> bodyPosting = bodyPostings.stream()
+                            .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
+                    if (bodyPosting.isPresent()) {
+                        frequency += bodyPosting.get().getFrequency();
+                    }
+                }
+
+                if (frequency > 0) {
+                    pairs.add(new Pair(word, frequency));
+                }
+            }
+
+            Result result = new Result(properties.getTitle(), properties.getUrl(), properties.getSize(),
+                    properties.getLastModifiedAt(), pairs, childLinks);
+            results.add(result);
+
+            docId = (Integer) iterator.next();
+        }
+
+        return results;
     }
 
     public Integer getDocId(String url) throws IOException {
@@ -54,6 +115,7 @@ public class Storage {
         if (docId == null) {
             docId = documentMap.getNextDocId();
             documentMap.put(url, docId);
+            documentForwardMap.put(docId, url);
         }
         return docId;
     }
@@ -100,11 +162,13 @@ public class Storage {
                 .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
         // update forward index map
-        Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
-        Set<Integer> uniqueBodyWordIds = new HashSet<Integer>(bodyWordIds);
-        forwardIndexMap.put(docId, uniqueBodyWordIds);
+        Set<String> uniqueWords = new HashSet<String>(bodyWords);
+        uniqueWords.addAll(titleWords);
+        forwardIndexMap.put(docId, uniqueWords);
 
         // update title inverted index
+        Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
+
         for (Integer wordId : uniqueTitleWordIds) {
             Posting newPosting = new Posting(docId, titleWordFrequencies.get(wordId).intValue());
 
@@ -121,6 +185,8 @@ public class Storage {
         }
 
         // update body inverted index
+        Set<Integer> uniqueBodyWordIds = new HashSet<Integer>(bodyWordIds);
+
         for (Integer wordId : uniqueBodyWordIds) {
             Posting newPosting = new Posting(docId, bodyWordFrequencies.get(wordId).intValue());
 

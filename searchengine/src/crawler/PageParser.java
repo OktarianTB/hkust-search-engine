@@ -1,6 +1,7 @@
 package crawler;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +15,8 @@ import org.htmlparser.tags.LinkTag;
 import org.htmlparser.tags.TitleTag;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
+
+import utilities.LinkCleaner;
 
 class PageParser {
     private String url;
@@ -58,8 +61,10 @@ class PageParser {
 
             try {
                 URL u = new URL(linkTag.getLink());
-                links.add(u.toString());
+                String cleanedLink = LinkCleaner.cleanLink(u.toURI());
+                links.add(cleanedLink);
             } catch (MalformedURLException ignore) {
+            } catch (URISyntaxException ignore) {
             }
         }
 

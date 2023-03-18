@@ -1,28 +1,28 @@
 package storage;
 
 import java.io.IOException;
-import java.util.Set;
 
 import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * ForwardIndexMap is a HashMap from Doc ID => Page Keywords (Word IDs)
+ * DocumentForwardMap is a HashMap from Document ID => Doc URL
  */
-public class ForwardIndexMap extends Map<Integer, Set<String>> {
-    static final String PAGE_MAP_OBJECT_NAME = "ForwardIndexMap";
+public class DocumentForwardMap extends Map<Integer, String> {
+    static final String PAGE_MAP_OBJECT_NAME = "DocumentForwardMap";
 
-    public ForwardIndexMap(RecordManager recordManager) throws IOException {
+    public DocumentForwardMap(RecordManager recordManager) throws IOException {
         super(recordManager, PAGE_MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {
-        System.out.println("--- Forward Index Map ---");
+        System.out.println("--- Document Forward Map ---");
         FastIterator iterator = keys();
         Integer key = (Integer) iterator.next();
         while (key != null) {
             System.out.println(key + " -> " + get(key));
             key = (Integer) iterator.next();
         }
+        System.out.println();
     }
 }

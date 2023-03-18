@@ -97,7 +97,10 @@ public class Crawler {
             }
 
             // Stem word and add to output list
-            words.add(stemmer.stem(word));
+            String stemmedWord = stemmer.stem(word);
+            if (stemmedWord.length() > 0) {
+                words.add(stemmedWord);
+            }
         }
 
         return words;
@@ -113,6 +116,6 @@ public class Crawler {
     }
 
     public static void main(String[] args) throws IOException {
-        new Crawler("https://cse.hkust.edu.hk", 3);
+        new Crawler("https://cse.hkust.edu.hk/", 30);
     }
 }
