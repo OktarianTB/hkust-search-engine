@@ -1,18 +1,22 @@
-## Getting Started
+## COMP4321 Search Engine
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+### How to run the crawler & indexer
 
-## Folder Structure
+The crawling and indexing is found in the `Crawler.java` file. The test program is found in the `App.java` file.
 
-The workspace contains two folders by default, where:
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+To compile all files:
+```
+javac -d outputs -cp lib/jdbm-1.0.jar;lib/htmlparser.jar src/utilities/*.java src/storage/*.java src/crawler/*.java src/App.java
+```
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+To execute the Crawler:
+```
+java -cp lib/jdbm-1.0.jar;lib/htmlparser.jar;outputs;. crawler.Crawler
+```
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+To execute the test program:
+```
+java -cp lib/jdbm-1.0.jar;lib/htmlparser.jar;outputs;. App
+```
 
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).

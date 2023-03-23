@@ -105,10 +105,4 @@ class PageParser {
         }
         return new Date(lastModifiedAt);
     }
-
-    public static void main(String[] args) throws ParserException {
-        PageParser pageParser = new PageParser("https://cse.hkust.edu.hk/"); // https://cse.hkust.edu.hk/~dlee/4321/
-
-        pageParser.fetchPage();
-    }
 }

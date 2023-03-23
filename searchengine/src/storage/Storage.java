@@ -43,14 +43,6 @@ public class Storage {
     }
 
     public void commitAndClose() throws IOException {
-        documentMap.print();
-        // propertiesMap.print();
-        // forwardIndexMap.print();
-        // wordMap.print();
-        // titleInvertedIndexMap.print();
-        // bodyInvertedIndexMap.print();
-        // adjacencyMap.print();
-
         recordManager.commit();
         recordManager.close();
     }
