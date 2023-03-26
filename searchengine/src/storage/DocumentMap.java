@@ -9,11 +9,11 @@ import jdbm.helper.FastIterator;
  * DocumentMap is a HashMap from Document URL => Doc ID
  */
 public class DocumentMap extends Map<String, Integer> {
-    static final String PAGE_MAP_OBJECT_NAME = "DocumentMap";
+    static final String MAP_OBJECT_NAME = "DocumentMap";
     static final String CURRENT_MAX_ID_KEYWORD = "CURRENT_MAX_ID_KEYWORD";
 
     public DocumentMap(RecordManager recordManager) throws IOException {
-        super(recordManager, PAGE_MAP_OBJECT_NAME);
+        super(recordManager, MAP_OBJECT_NAME);
 
         if (!contains(CURRENT_MAX_ID_KEYWORD)) {
             put(CURRENT_MAX_ID_KEYWORD, 0);

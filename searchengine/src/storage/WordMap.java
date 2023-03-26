@@ -9,11 +9,11 @@ import jdbm.helper.FastIterator;
  * WordMap is a HashMap from Word => Word ID
  */
 public class WordMap extends Map<String, Integer> {
-    static final String PAGE_MAP_OBJECT_NAME = "WordMap";
+    static final String MAP_OBJECT_NAME = "WordMap";
     static final String CURRENT_MAX_ID_KEYWORD = "CURRENT_MAX_ID_KEYWORD";
 
     public WordMap(RecordManager recordManager) throws IOException {
-        super(recordManager, PAGE_MAP_OBJECT_NAME);
+        super(recordManager, MAP_OBJECT_NAME);
 
         if (!contains(CURRENT_MAX_ID_KEYWORD)) {
             put(CURRENT_MAX_ID_KEYWORD, 0);

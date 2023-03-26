@@ -10,10 +10,10 @@ import jdbm.helper.FastIterator;
  * TitleInvertedIndexMap is a HashMap from Doc ID => List of Title Postings
  */
 public class TitleInvertedIndexMap extends Map<Integer, List<Posting>> {
-    static final String PAGE_MAP_OBJECT_NAME = "TitleInvertedIndexMap";
+    static final String MAP_OBJECT_NAME = "TitleInvertedIndexMap";
 
     public TitleInvertedIndexMap(RecordManager recordManager) throws IOException {
-        super(recordManager, PAGE_MAP_OBJECT_NAME);
+        super(recordManager, MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {

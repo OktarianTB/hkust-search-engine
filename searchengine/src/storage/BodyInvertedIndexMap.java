@@ -10,10 +10,10 @@ import jdbm.helper.FastIterator;
  * BodyInvertedIndexMap is a HashMap from Doc ID => List of Body Postings
  */
 public class BodyInvertedIndexMap extends Map<Integer, List<Posting>> {
-    static final String PAGE_MAP_OBJECT_NAME = "BodyInvertedIndexMap";
+    static final String MAP_OBJECT_NAME = "BodyInvertedIndexMap";
 
     public BodyInvertedIndexMap(RecordManager recordManager) throws IOException {
-        super(recordManager, PAGE_MAP_OBJECT_NAME);
+        super(recordManager, MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {

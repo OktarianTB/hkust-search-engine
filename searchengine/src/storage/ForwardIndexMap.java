@@ -7,9 +7,9 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * ForwardIndexMap is a HashMap from Doc ID => Page Keywords (Word IDs)
+ * ForwardIndexMap is a HashMap from Doc ID => Doc Keywords (Word IDs)
  */
-public class ForwardIndexMap extends Map<Integer, Set<String>> {
+public class ForwardIndexMap extends Map<Integer, Set<Integer>> {
     static final String PAGE_MAP_OBJECT_NAME = "ForwardIndexMap";
 
     public ForwardIndexMap(RecordManager recordManager) throws IOException {

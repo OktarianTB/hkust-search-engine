@@ -20,8 +20,9 @@ public class Storage {
     private RecordManager recordManager;
 
     private WordMap wordMap;
+    private ReverseWordMap reverseWordMap;
     private DocumentMap documentMap;
-    private DocumentForwardMap documentForwardMap;
+    private ReverseDocumentMap reverseDocumentMap;
     private TitleInvertedIndexMap titleInvertedIndexMap;
     private BodyInvertedIndexMap bodyInvertedIndexMap;
     private ForwardIndexMap forwardIndexMap;
@@ -33,8 +34,9 @@ public class Storage {
 
         // initialize all storage maps
         wordMap = new WordMap(recordManager);
+        reverseWordMap = new ReverseWordMap(recordManager);
         documentMap = new DocumentMap(recordManager);
-        documentForwardMap = new DocumentForwardMap(recordManager);
+        reverseDocumentMap = new ReverseDocumentMap(recordManager);
         titleInvertedIndexMap = new TitleInvertedIndexMap(recordManager);
         bodyInvertedIndexMap = new BodyInvertedIndexMap(recordManager);
         forwardIndexMap = new ForwardIndexMap(recordManager);
@@ -60,13 +62,13 @@ public class Storage {
             Relationship relationship = adjacencyMap.get(docId);
             List<String> childLinks = new ArrayList<String>();
             for (Integer childDocId : relationship.getChildDocIds()) {
-                childLinks.add(documentForwardMap.get(childDocId));
+                childLinks.add(reverseDocumentMap.get(childDocId));
             }
 
             List<Pair> pairs = new ArrayList<Pair>();
-            Set<String> words = forwardIndexMap.get(docId);
-            for (String word : words) {
-                Integer wordId = wordMap.get(word);
+            Set<Integer> wordIds = forwardIndexMap.get(docId);
+            for (Integer wordId : wordIds) {
+                String word = reverseWordMap.get(wordId);
                 int frequency = 0;
 
                 List<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
@@ -107,7 +109,7 @@ public class Storage {
         if (docId == null) {
             docId = documentMap.getNextDocId();
             documentMap.put(url, docId);
-            documentForwardMap.put(docId, url);
+            reverseDocumentMap.put(docId, url);
         }
         return docId;
     }
@@ -117,6 +119,7 @@ public class Storage {
         if (wordId == null) {
             wordId = wordMap.getNextWordId();
             wordMap.put(word, wordId);
+            reverseWordMap.put(wordId, word);
         }
         return wordId;
     }
@@ -154,13 +157,14 @@ public class Storage {
                 .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
         // update forward index map
-        Set<String> uniqueWords = new HashSet<String>(bodyWords);
-        uniqueWords.addAll(titleWords);
-        forwardIndexMap.put(docId, uniqueWords);
+        Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
+        Set<Integer> uniqueBodyWordIds = new HashSet<Integer>(bodyWordIds);
+
+        Set<Integer> uniqueWordIds = new HashSet<Integer>(uniqueTitleWordIds);
+        uniqueWordIds.addAll(uniqueBodyWordIds);
+        forwardIndexMap.put(docId, uniqueWordIds);
 
         // update title inverted index
-        Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
-
         for (Integer wordId : uniqueTitleWordIds) {
             Posting newPosting = new Posting(docId, titleWordFrequencies.get(wordId).intValue());
 
@@ -177,8 +181,6 @@ public class Storage {
         }
 
         // update body inverted index
-        Set<Integer> uniqueBodyWordIds = new HashSet<Integer>(bodyWordIds);
-
         for (Integer wordId : uniqueBodyWordIds) {
             Posting newPosting = new Posting(docId, bodyWordFrequencies.get(wordId).intValue());
 

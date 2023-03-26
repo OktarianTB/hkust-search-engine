@@ -6,16 +6,16 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * AdjacencyMap is a HashMap from Doc ID => List of Child & Parent Doc IDs
+ * ReverseWordMap is a HashMap from Word ID => Word
  */
-public class AdjacencyMap extends Map<Integer, Relationship> {
-    static final String MAP_OBJECT_NAME = "AdjacencyMap";
+public class ReverseWordMap extends Map<Integer, String> {
+    static final String MAP_OBJECT_NAME = "ReverseWordMap";
 
-    public AdjacencyMap(RecordManager recordManager) throws IOException {
+    public ReverseWordMap(RecordManager recordManager) throws IOException {
         super(recordManager, MAP_OBJECT_NAME);
     }
-
     public void print() throws IOException {
+        System.out.println("--- Reverse Word Map ---");
         FastIterator iterator = keys();
         Integer key = (Integer) iterator.next();
         while (key != null) {
