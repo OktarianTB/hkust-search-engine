@@ -57,46 +57,49 @@ public class Storage {
         while (docId != null) {
             final int innerDocId = docId;
 
-            Properties properties = propertiesMap.get(docId);
+            try {
+                Properties properties = propertiesMap.get(docId);
 
-            Relationship relationship = adjacencyMap.get(docId);
-            List<String> childLinks = new ArrayList<String>();
-            for (Integer childDocId : relationship.getChildDocIds()) {
-                childLinks.add(reverseDocumentMap.get(childDocId));
-            }
+                Relationship relationship = adjacencyMap.get(docId);
+                List<String> childLinks = new ArrayList<String>();
+                for (Integer childDocId : relationship.getChildDocIds()) {
+                    childLinks.add(reverseDocumentMap.get(childDocId));
+                }
 
-            List<Pair> pairs = new ArrayList<Pair>();
-            Set<Integer> wordIds = forwardIndexMap.get(docId);
-            for (Integer wordId : wordIds) {
-                String word = reverseWordMap.get(wordId);
-                int frequency = 0;
+                List<Pair> pairs = new ArrayList<Pair>();
+                Set<Integer> wordIds = forwardIndexMap.get(docId);
+                for (Integer wordId : wordIds) {
+                    String word = reverseWordMap.get(wordId);
+                    int frequency = 0;
 
-                List<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
-                if (titlePostings != null) {
-                    Optional<Posting> titlePosting = titlePostings.stream()
-                            .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
-                    if (titlePosting.isPresent()) {
-                        frequency += titlePosting.get().getFrequency();
+                    List<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
+                    if (titlePostings != null) {
+                        Optional<Posting> titlePosting = titlePostings.stream()
+                                .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
+                        if (titlePosting.isPresent()) {
+                            frequency += titlePosting.get().getFrequency();
+                        }
+                    }
+
+                    List<Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
+                    if (bodyPostings != null) {
+                        Optional<Posting> bodyPosting = bodyPostings.stream()
+                                .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
+                        if (bodyPosting.isPresent()) {
+                            frequency += bodyPosting.get().getFrequency();
+                        }
+                    }
+
+                    if (frequency > 0) {
+                        pairs.add(new Pair(word, frequency));
                     }
                 }
 
-                List<Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
-                if (bodyPostings != null) {
-                    Optional<Posting> bodyPosting = bodyPostings.stream()
-                            .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
-                    if (bodyPosting.isPresent()) {
-                        frequency += bodyPosting.get().getFrequency();
-                    }
-                }
-
-                if (frequency > 0) {
-                    pairs.add(new Pair(word, frequency));
-                }
+                Result result = new Result(properties.getTitle(), properties.getUrl(), properties.getSize(),
+                        properties.getLastModifiedAt(), pairs, childLinks);
+                results.add(result);
+            } catch (IOException ignore) {
             }
-
-            Result result = new Result(properties.getTitle(), properties.getUrl(), properties.getSize(),
-                    properties.getLastModifiedAt(), pairs, childLinks);
-            results.add(result);
 
             docId = (Integer) iterator.next();
         }

@@ -1,5 +1,6 @@
 package crawler;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -32,11 +33,13 @@ class PageParser {
             String text = getPageText();
             List<String> links = getPageLinks();
             String title = getPageTitle();
-            int size = getPageSize(text);
+            int size = getPageSize();
             Date lastModifiedAt = getPageLastModifiedAt();
     
             return new Page(url, title, text, links, size, lastModifiedAt);
         } catch (ParserException ignore) {
+            return null;
+        } catch (UnsupportedEncodingException ignore) {
             return null;
         }
     }
@@ -46,6 +49,7 @@ class PageParser {
         sb.setLinks(false);
         parser.visitAllNodesWith(sb);
         String text = sb.getStrings();
+
         parser.reset();
         return text;
     }
@@ -87,11 +91,20 @@ class PageParser {
         return title;
     }
 
-    public int getPageSize(String fallbackText) {
+    public int getPageSize() throws ParserException, UnsupportedEncodingException {
         int contentLength = parser.getConnection().getContentLength();
 
         if (contentLength < 0) {
-            return fallbackText.length();
+            int size = 0;
+            NodeFilter filter = new NodeClassFilter();
+            NodeList nodes = parser.extractAllNodesThatMatch(filter);
+
+            for (int i = 0; i < nodes.size(); i++) {
+                size += nodes.elementAt(i).toHtml().length();
+            }
+
+            parser.reset();
+            return size;
         }
 
         return contentLength;
@@ -104,5 +117,10 @@ class PageParser {
             lastModifiedAt = parser.getConnection().getDate();
         }
         return new Date(lastModifiedAt);
+    }
+
+    public static void main(String[] args) throws ParserException, UnsupportedEncodingException {
+        PageParser pageParser = new PageParser("https://hkust.edu.hk/news");
+        System.out.println(pageParser.getPageSize());
     }
 }
