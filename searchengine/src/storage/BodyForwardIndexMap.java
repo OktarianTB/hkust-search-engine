@@ -7,17 +7,17 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * ForwardIndexMap is a HashMap from Doc ID => Doc Keywords (Word IDs)
+ * BodyForwardIndexMap is a HashMap from Doc ID => Doc Body Keywords (Word IDs)
  */
-public class ForwardIndexMap extends Map<Integer, Set<Integer>> {
-    static final String PAGE_MAP_OBJECT_NAME = "ForwardIndexMap";
+public class BodyForwardIndexMap extends Map<Integer, Set<Integer>> {
+    static final String PAGE_MAP_OBJECT_NAME = "BodyForwardIndexMap";
 
-    public ForwardIndexMap(RecordManager recordManager) throws IOException {
+    public BodyForwardIndexMap(RecordManager recordManager) throws IOException {
         super(recordManager, PAGE_MAP_OBJECT_NAME);
     }
 
     public void print() throws IOException {
-        System.out.println("--- Forward Index Map ---");
+        System.out.println("--- Body Forward Index Map ---");
         FastIterator iterator = keys();
         Integer key = (Integer) iterator.next();
         while (key != null) {

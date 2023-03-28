@@ -3,6 +3,7 @@ package storage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,6 @@ import java.util.stream.Collectors;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
 import jdbm.helper.FastIterator;
-import utilities.Pair;
 import utilities.Result;
 
 public class Storage {
@@ -25,7 +25,8 @@ public class Storage {
     private ReverseDocumentMap reverseDocumentMap;
     private TitleInvertedIndexMap titleInvertedIndexMap;
     private BodyInvertedIndexMap bodyInvertedIndexMap;
-    private ForwardIndexMap forwardIndexMap;
+    private TitleForwardIndexMap titleForwardIndexMap;
+    private BodyForwardIndexMap bodyForwardIndexMap;
     private AdjacencyMap adjacencyMap;
     private PropertiesMap propertiesMap;
 
@@ -35,12 +36,18 @@ public class Storage {
         // initialize all storage maps
         wordMap = new WordMap(recordManager);
         reverseWordMap = new ReverseWordMap(recordManager);
+
         documentMap = new DocumentMap(recordManager);
         reverseDocumentMap = new ReverseDocumentMap(recordManager);
+
         titleInvertedIndexMap = new TitleInvertedIndexMap(recordManager);
         bodyInvertedIndexMap = new BodyInvertedIndexMap(recordManager);
-        forwardIndexMap = new ForwardIndexMap(recordManager);
+
+        titleForwardIndexMap = new TitleForwardIndexMap(recordManager);
+        bodyForwardIndexMap = new BodyForwardIndexMap(recordManager);
+
         adjacencyMap = new AdjacencyMap(recordManager);
+
         propertiesMap = new PropertiesMap(recordManager);
     }
 
@@ -61,42 +68,47 @@ public class Storage {
                 Properties properties = propertiesMap.get(docId);
 
                 Relationship relationship = adjacencyMap.get(docId);
+                // for every child doc id, get the url from the reverse document map and add it
+                // to the list of child links
                 List<String> childLinks = new ArrayList<String>();
                 for (Integer childDocId : relationship.getChildDocIds()) {
                     childLinks.add(reverseDocumentMap.get(childDocId));
                 }
 
-                List<Pair> pairs = new ArrayList<Pair>();
-                Set<Integer> wordIds = forwardIndexMap.get(docId);
-                for (Integer wordId : wordIds) {
+                Map<String, Integer> wordFrequencyMap = new HashMap<String, Integer>();
+
+                Set<Integer> titleWordIds = titleForwardIndexMap.get(docId);
+                for (Integer wordId : titleWordIds) {
                     String word = reverseWordMap.get(wordId);
-                    int frequency = 0;
 
                     List<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
                     if (titlePostings != null) {
                         Optional<Posting> titlePosting = titlePostings.stream()
                                 .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
                         if (titlePosting.isPresent()) {
-                            frequency += titlePosting.get().getFrequency();
+                            int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
+                            wordFrequencyMap.put(word, titlePosting.get().getFrequency() + currentFrequency);
                         }
                     }
+                }
+
+                Set<Integer> bodyWordIds = bodyForwardIndexMap.get(docId);
+                for (Integer wordId : bodyWordIds) {
+                    String word = reverseWordMap.get(wordId);
 
                     List<Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
                     if (bodyPostings != null) {
                         Optional<Posting> bodyPosting = bodyPostings.stream()
                                 .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
                         if (bodyPosting.isPresent()) {
-                            frequency += bodyPosting.get().getFrequency();
+                            int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
+                            wordFrequencyMap.put(word, bodyPosting.get().getFrequency() + currentFrequency);
                         }
-                    }
-
-                    if (frequency > 0) {
-                        pairs.add(new Pair(word, frequency));
                     }
                 }
 
                 Result result = new Result(properties.getTitle(), properties.getUrl(), properties.getSize(),
-                        properties.getLastModifiedAt(), pairs, childLinks);
+                        properties.getLastModifiedAt(), wordFrequencyMap, childLinks);
                 results.add(result);
             } catch (IOException ignore) {
             }
@@ -163,9 +175,8 @@ public class Storage {
         Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
         Set<Integer> uniqueBodyWordIds = new HashSet<Integer>(bodyWordIds);
 
-        Set<Integer> uniqueWordIds = new HashSet<Integer>(uniqueTitleWordIds);
-        uniqueWordIds.addAll(uniqueBodyWordIds);
-        forwardIndexMap.put(docId, uniqueWordIds);
+        titleForwardIndexMap.put(docId, uniqueTitleWordIds);
+        bodyForwardIndexMap.put(docId, uniqueBodyWordIds);
 
         // update title inverted index
         for (Integer wordId : uniqueTitleWordIds) {
@@ -173,6 +184,7 @@ public class Storage {
 
             List<Posting> postings = titleInvertedIndexMap.get(wordId);
             if (postings != null) {
+                // remove existing posting for this docId (if it exists)
                 List<Posting> newPostings = postings.stream().filter(posting -> !posting.getDocId().equals(docId))
                         .collect(Collectors.toList());
                 newPostings.add(newPosting);
@@ -189,6 +201,7 @@ public class Storage {
 
             List<Posting> postings = bodyInvertedIndexMap.get(wordId);
             if (postings != null) {
+                // remove existing posting for this docId (if it exists)
                 List<Posting> newPostings = postings.stream().filter(posting -> !posting.getDocId().equals(docId))
                         .collect(Collectors.toList());
                 newPostings.add(newPosting);
