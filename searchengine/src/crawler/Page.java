@@ -47,7 +47,7 @@ class Page {
     }
 
     public Properties toProperties() {
-        return new Properties(url, title, size, lastModifiedAt);
+        return new Properties(title, size, lastModifiedAt);
     }
 
     @Override

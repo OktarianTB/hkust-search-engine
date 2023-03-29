@@ -4,20 +4,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Properties implements Serializable {
-    private String url;
     private String title;
     private int size;
     private Date lastModifiedAt;
 
-    public Properties(String url, String title, int size, Date lastModifiedAt) {
-        this.url = url;
+    public Properties(String title, int size, Date lastModifiedAt) {
         this.title = title;
         this.size = size;
         this.lastModifiedAt = lastModifiedAt;
-    }
-
-    public String getUrl() {
-        return this.url;
     }
 
     public String getTitle() {
@@ -35,8 +29,7 @@ public class Properties implements Serializable {
     @Override
     public String toString() {
         return "{" +
-                " url='" + getUrl() + "'" +
-                ", title='" + getTitle() + "'" +
+                " title='" + getTitle() + "'" +
                 ", size='" + getSize() + "'" +
                 ", lastModifiedAt='" + getLastModifiedAt() + "'" +
                 "}";

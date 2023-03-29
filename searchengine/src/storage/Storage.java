@@ -62,12 +62,16 @@ public class Storage {
     public List<Result> getResults() throws IOException {
         List<Result> results = new ArrayList<Result>();
 
+        // iterate through all the documents in the properties map, which only contains
+        // fully indexed pages
         FastIterator iterator = propertiesMap.keys();
         Integer docId = (Integer) iterator.next();
+
         while (docId != null) {
             final int innerDocId = docId;
 
             try {
+                String url = reverseDocumentMap.get(docId);
                 Properties properties = propertiesMap.get(docId);
 
                 Relationship relationship = adjacencyMap.get(docId);
@@ -75,7 +79,8 @@ public class Storage {
                 // to the list of child links
                 List<String> childLinks = new ArrayList<String>();
                 for (Integer childDocId : relationship.getChildDocIds()) {
-                    childLinks.add(reverseDocumentMap.get(childDocId));
+                    String childLink = reverseDocumentMap.get(childDocId);
+                    childLinks.add(childLink);
                 }
 
                 // combine the title and body word ids into one set of words and their
@@ -112,7 +117,8 @@ public class Storage {
                     }
                 }
 
-                Result result = new Result(properties.getTitle(), properties.getUrl(), properties.getSize(),
+                // add result to output list
+                Result result = new Result(properties.getTitle(), url, properties.getSize(),
                         properties.getLastModifiedAt(), wordFrequencyMap, childLinks);
                 results.add(result);
             } catch (IOException ignore) {
@@ -186,7 +192,7 @@ public class Storage {
         // get unique word ids
         Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
         Set<Integer> uniqueBodyWordIds = new HashSet<Integer>(bodyWordIds);
-                
+
         // update forward index map
         titleForwardIndexMap.put(docId, uniqueTitleWordIds);
         bodyForwardIndexMap.put(docId, uniqueBodyWordIds);

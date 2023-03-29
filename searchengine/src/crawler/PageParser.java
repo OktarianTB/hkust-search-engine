@@ -47,7 +47,7 @@ class PageParser {
 
     // returns the title of the page
     private String getPageTitle() throws ParserException {
-        String title = "";
+        String title = "No Title";
         NodeFilter titleFilter = new NodeClassFilter(TitleTag.class);
         NodeList titleList = parser.extractAllNodesThatMatch(titleFilter);
         if (titleList.size() > 0) {
