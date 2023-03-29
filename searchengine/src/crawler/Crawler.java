@@ -15,6 +15,7 @@ import storage.Storage;
 import utilities.PorterStemmer;
 import utilities.StopWordsChecker;
 
+// the crawler class is responsible for crawling and indexing pages
 public class Crawler {
     private final static String STORAGE_NAME = "search_engine";
 
@@ -49,41 +50,44 @@ public class Crawler {
         storage.commitAndClose();
     }
 
+    // crawl and index pages
     private void crawlAndIndex() throws IOException {
         int pagesCrawled = 0;
 
         while (pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
             String url = urlsToVisit.remove();
+            visitedUrls.add(url);
             Page page = getPage(url);
 
             if (page != null) {
-                System.out.println(url + ":\n" + page.getTitle() + "\n\n");
+                System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle() + "\n\n");
 
                 pagesCrawled += 1;
-                visitedUrls.add(url);
 
                 Integer docId = storage.getDocId(url);
+
+                Set<Integer> childDocIds = new HashSet<Integer>();
+                for (String link : page.getLinks()) {
+                    Integer childDocId = storage.getDocId(link);
+                    childDocIds.add(childDocId);
+
+                    if (!visitedUrls.contains(link)) {
+                        urlsToVisit.add(link);
+                    }
+                }
 
                 if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
                     List<String> titleWords = getTransformedWords(page.getTitle());
                     List<String> bodyWords = getTransformedWords(page.getText());
 
                     storage.updateDocument(docId, page.toProperties(), titleWords, bodyWords);
+                    storage.updateRelationships(docId, childDocIds);
                 }
-
-                Set<Integer> linksDocIds = new HashSet<Integer>();
-                for (String link : page.getLinks()) {
-                    linksDocIds.add(storage.getDocId(link));
-
-                    if (!visitedUrls.contains(link)) {
-                        urlsToVisit.add(link);
-                    }
-                }
-                storage.updateRelationships(docId, linksDocIds);
             }
         }
     }
 
+    // transform text into a list of stemmed words
     private List<String> getTransformedWords(String text) {
         List<String> words = new ArrayList<String>();
         StringTokenizer stringTokenizer = new StringTokenizer(text);
@@ -106,6 +110,7 @@ public class Crawler {
         return words;
     }
 
+    // fetch a page from the given url
     private Page getPage(String url) {
         try {
             PageParser pageParser = new PageParser(url);

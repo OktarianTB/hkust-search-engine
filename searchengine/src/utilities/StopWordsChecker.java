@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
+// this class is used to check if a word is a stop word
 public class StopWordsChecker
 {
 	private HashSet<String> stopWords;

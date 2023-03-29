@@ -376,6 +376,7 @@ public class PorterStemmer {
         return str;
     }
 
+    // stem the provided word based on an existing implementation of the Porter Stemming Algorithm
     public String stem(String str) {
         str = Clean(str);
 
@@ -388,5 +389,5 @@ public class PorterStemmer {
         }
 
         return str;
-    } // stem
+    }
 }

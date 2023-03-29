@@ -28,11 +28,12 @@ class PageParser {
         parser = new Parser(url);
     }
 
+    // parses the page to get the title, text, links, size, and last modified date
     public Page fetchPage() {
         try {
+            String title = getPageTitle();
             String text = getPageText();
             List<String> links = getPageLinks();
-            String title = getPageTitle();
             int size = getPageSize();
             Date lastModifiedAt = getPageLastModifiedAt();
     
@@ -44,6 +45,23 @@ class PageParser {
         }
     }
 
+    // returns the title of the page
+    private String getPageTitle() throws ParserException {
+        String title = "";
+        NodeFilter titleFilter = new NodeClassFilter(TitleTag.class);
+        NodeList titleList = parser.extractAllNodesThatMatch(titleFilter);
+        if (titleList.size() > 0) {
+            TitleTag titleTag = (TitleTag) titleList.elementAt(0);
+            if (titleTag != null) {
+                title = titleTag.getTitle();
+            }
+        }
+
+        parser.reset();
+        return title;
+    }
+
+    // returns the text on the page
     private String getPageText() throws ParserException {
         StringBean sb = new StringBean();
         sb.setLinks(false);
@@ -54,6 +72,7 @@ class PageParser {
         return text;
     }
 
+    // returns a list of links on the page
     private List<String> getPageLinks() throws ParserException {
         NodeFilter linkFilter = new NodeClassFilter(LinkTag.class);
         NodeList linkList = parser.extractAllNodesThatMatch(linkFilter);
@@ -76,21 +95,8 @@ class PageParser {
         return links;
     }
 
-    private String getPageTitle() throws ParserException {
-        String title = "";
-        NodeFilter titleFilter = new NodeClassFilter(TitleTag.class);
-        NodeList titleList = parser.extractAllNodesThatMatch(titleFilter);
-        if (titleList.size() > 0) {
-            TitleTag titleTag = (TitleTag) titleList.elementAt(0);
-            if (titleTag != null) {
-                title = titleTag.getTitle();
-            }
-        }
-
-        parser.reset();
-        return title;
-    }
-
+    // returns the size of the page
+    // if the page does not have a size, returns the number of characters of the raw HTML
     public int getPageSize() throws ParserException, UnsupportedEncodingException {
         int contentLength = parser.getConnection().getContentLength();
 
@@ -110,6 +116,8 @@ class PageParser {
         return contentLength;
     }
 
+    // returns the last modified date of the page
+    // if the page does not have a last modified date, returns the date the page was created
     public Date getPageLastModifiedAt() {
         long lastModifiedAt;
         lastModifiedAt = parser.getConnection().getLastModified();
@@ -117,10 +125,5 @@ class PageParser {
             lastModifiedAt = parser.getConnection().getDate();
         }
         return new Date(lastModifiedAt);
-    }
-
-    public static void main(String[] args) throws ParserException, UnsupportedEncodingException {
-        PageParser pageParser = new PageParser("https://hkust.edu.hk/news");
-        System.out.println(pageParser.getPageSize());
     }
 }

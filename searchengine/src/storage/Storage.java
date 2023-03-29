@@ -16,6 +16,7 @@ import jdbm.RecordManagerFactory;
 import jdbm.helper.FastIterator;
 import utilities.Result;
 
+// the storage class is responsible for managing storage, updating documents, and outputting results
 public class Storage {
     private RecordManager recordManager;
 
@@ -56,6 +57,8 @@ public class Storage {
         recordManager.close();
     }
 
+    // create a list of results containing all the information needed for the test
+    // program
     public List<Result> getResults() throws IOException {
         List<Result> results = new ArrayList<Result>();
 
@@ -75,13 +78,15 @@ public class Storage {
                     childLinks.add(reverseDocumentMap.get(childDocId));
                 }
 
+                // combine the title and body word ids into one set of words and their
+                // frequencies
                 Map<String, Integer> wordFrequencyMap = new HashMap<String, Integer>();
 
                 Set<Integer> titleWordIds = titleForwardIndexMap.get(docId);
                 for (Integer wordId : titleWordIds) {
                     String word = reverseWordMap.get(wordId);
 
-                    List<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
+                    Set<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
                     if (titlePostings != null) {
                         Optional<Posting> titlePosting = titlePostings.stream()
                                 .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
@@ -96,7 +101,7 @@ public class Storage {
                 for (Integer wordId : bodyWordIds) {
                     String word = reverseWordMap.get(wordId);
 
-                    List<Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
+                    Set<Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
                     if (bodyPostings != null) {
                         Optional<Posting> bodyPosting = bodyPostings.stream()
                                 .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
@@ -119,6 +124,7 @@ public class Storage {
         return results;
     }
 
+    // get the doc id for the given url if it exists, else create a new doc id
     public Integer getDocId(String url) throws IOException {
         Integer docId = documentMap.get(url);
         if (docId == null) {
@@ -129,6 +135,7 @@ public class Storage {
         return docId;
     }
 
+    // get the word id for the given url if it exists, else create a new word id
     public Integer getWordId(String word) throws IOException {
         Integer wordId = wordMap.get(word);
         if (wordId == null) {
@@ -139,6 +146,7 @@ public class Storage {
         return wordId;
     }
 
+    // returns the list of word ids for the given list of words
     private List<Integer> getWordIds(List<String> words) throws IOException {
         List<Integer> wordIds = new ArrayList<Integer>();
 
@@ -149,6 +157,9 @@ public class Storage {
         return wordIds;
     }
 
+    // check if the document needs to be updated based on whether the new last
+    // modified date is newer than the previously recorded last modified (if it
+    // exists)
     public boolean docNeedsUpdating(Integer docId, Date newLastModifiedAt) throws IOException {
         Properties properties = propertiesMap.get(docId);
         if (properties != null) {
@@ -157,6 +168,7 @@ public class Storage {
         return true;
     }
 
+    // update the document with the given doc id in the storage maps
     public void updateDocument(Integer docId, Properties properties, List<String> titleWords, List<String> bodyWords)
             throws IOException {
         // update properties map
@@ -171,10 +183,11 @@ public class Storage {
         Map<Integer, Long> bodyWordFrequencies = bodyWordIds.stream()
                 .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
-        // update forward index map
+        // get unique word ids
         Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
         Set<Integer> uniqueBodyWordIds = new HashSet<Integer>(bodyWordIds);
-
+                
+        // update forward index map
         titleForwardIndexMap.put(docId, uniqueTitleWordIds);
         bodyForwardIndexMap.put(docId, uniqueBodyWordIds);
 
@@ -182,16 +195,15 @@ public class Storage {
         for (Integer wordId : uniqueTitleWordIds) {
             Posting newPosting = new Posting(docId, titleWordFrequencies.get(wordId).intValue());
 
-            List<Posting> postings = titleInvertedIndexMap.get(wordId);
-            if (postings != null) {
-                // remove existing posting for this docId (if it exists)
-                List<Posting> newPostings = postings.stream().filter(posting -> !posting.getDocId().equals(docId))
-                        .collect(Collectors.toList());
+            Set<Posting> currentPostings = titleInvertedIndexMap.get(wordId);
+            if (currentPostings != null) {
+                // remove the old posting for this doc id (if it exists) and add the new posting
+                Set<Posting> newPostings = new HashSet<Posting>(currentPostings);
+                newPostings.removeIf(posting -> posting.getDocId().equals(docId));
                 newPostings.add(newPosting);
-
                 titleInvertedIndexMap.put(wordId, newPostings);
             } else {
-                titleInvertedIndexMap.put(wordId, List.of(newPosting));
+                titleInvertedIndexMap.put(wordId, Set.of(newPosting));
             }
         }
 
@@ -199,23 +211,23 @@ public class Storage {
         for (Integer wordId : uniqueBodyWordIds) {
             Posting newPosting = new Posting(docId, bodyWordFrequencies.get(wordId).intValue());
 
-            List<Posting> postings = bodyInvertedIndexMap.get(wordId);
-            if (postings != null) {
-                // remove existing posting for this docId (if it exists)
-                List<Posting> newPostings = postings.stream().filter(posting -> !posting.getDocId().equals(docId))
-                        .collect(Collectors.toList());
+            Set<Posting> currentPostings = bodyInvertedIndexMap.get(wordId);
+            if (currentPostings != null) {
+                // remove the old posting for this doc id (if it exists) and add the new posting
+                Set<Posting> newPostings = new HashSet<Posting>(currentPostings);
+                newPostings.removeIf(posting -> posting.getDocId().equals(docId));
                 newPostings.add(newPosting);
-
                 bodyInvertedIndexMap.put(wordId, newPostings);
             } else {
-                bodyInvertedIndexMap.put(wordId, List.of(newPosting));
+                bodyInvertedIndexMap.put(wordId, Set.of(newPosting));
             }
         }
     }
 
+    // update adjacency matrix map with new parent-child relationships
     public void updateRelationships(Integer parentDocId, Set<Integer> childDocIds)
             throws IOException {
-        // update adjacency map of parent
+        // update adjacency map of parent with new children
         Relationship parentRelationship = adjacencyMap.get(parentDocId);
         if (parentRelationship != null) {
             adjacencyMap.put(parentDocId, new Relationship(parentRelationship.getParentDocIds(), childDocIds));
@@ -223,12 +235,12 @@ public class Storage {
             adjacencyMap.put(parentDocId, new Relationship(Set.of(), childDocIds));
         }
 
-        // update adjacency map of children
+        // update adjacency map of each child with new parent
         for (Integer childDocId : childDocIds) {
             Relationship childRelationship = adjacencyMap.get(childDocId);
+
             if (childRelationship != null) {
-                Set<Integer> newParentDocIds = childRelationship.getParentDocIds().stream()
-                        .filter(docId -> !docId.equals(parentDocId)).collect(Collectors.toSet());
+                Set<Integer> newParentDocIds = new HashSet<Integer>(childRelationship.getParentDocIds());
                 newParentDocIds.add(parentDocId);
 
                 adjacencyMap.put(childDocId, new Relationship(newParentDocIds, childRelationship.getChildDocIds()));

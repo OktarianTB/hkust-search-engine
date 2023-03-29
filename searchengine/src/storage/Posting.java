@@ -20,6 +20,25 @@ public class Posting implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return docId;
+    }
+
+    @Override
+   public boolean equals(Object obj) {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      Posting other = (Posting) obj;
+      if (docId != other.docId || frequency != other.frequency)
+         return false;
+      return true;
+   }
+
+    @Override
     public String toString() {
         return "{" +
                 " docId='" + getDocId() + "'" +

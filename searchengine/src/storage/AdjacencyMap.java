@@ -6,7 +6,7 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * AdjacencyMap is a HashMap from Doc ID => List of Child & Parent Doc IDs
+ * AdjacencyMap is a HashMap from Doc ID => Relationship (List of Child & Parent Doc IDs)
  */
 public class AdjacencyMap extends Map<Integer, Relationship> {
     static final String MAP_OBJECT_NAME = "AdjacencyMap";

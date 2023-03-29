@@ -6,6 +6,7 @@ import jdbm.htree.HTree;
 
 import java.io.IOException;
 
+// this class is a wrapper around the HTree class from the JDBM library
 public class Map<K, V> {
 	protected HTree hashTable;
 

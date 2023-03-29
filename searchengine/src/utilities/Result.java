@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+// Result class stores the information of a page needed in the test program
 public class Result {
     private String title;
     private String url;

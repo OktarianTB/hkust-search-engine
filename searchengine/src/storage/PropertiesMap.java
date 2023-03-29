@@ -6,7 +6,7 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * PropertiesMap is a HashMap from Doc ID => Page Properties
+ * PropertiesMap is a HashMap from Doc ID => Document Properties
  */
 public class PropertiesMap extends Map<Integer, Properties> {
     static final String MAP_OBJECT_NAME = "PropertiesMap";

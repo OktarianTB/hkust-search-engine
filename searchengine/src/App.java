@@ -17,6 +17,7 @@ public class App {
         storage.commitAndClose();
     }
 
+    // output results to file
     private void outputResults() throws IOException {
         List<Result> results = storage.getResults();
 
@@ -28,6 +29,8 @@ public class App {
         BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_NAME));
         writer.write(sb.toString());
         writer.close();
+
+        System.out.println("Success - results written to " + OUTPUT_FILE_NAME);
     }
 
     public static void main(String[] args) throws Exception {
