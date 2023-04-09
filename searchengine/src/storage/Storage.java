@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import crawler.Page;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
 import jdbm.helper.FastIterator;
@@ -86,6 +86,8 @@ public class Storage {
                 // combine the title and body word ids into one set of words and their
                 // frequencies
                 Map<String, Integer> wordFrequencyMap = new HashMap<String, Integer>();
+                Map<String, Set<Integer>> titleWordPositionsMap = new HashMap<String, Set<Integer>>();
+                Map<String, Set<Integer>> bodyWordPositionsMap = new HashMap<String, Set<Integer>>();
 
                 Set<Integer> titleWordIds = titleForwardIndexMap.get(docId);
                 for (Integer wordId : titleWordIds) {
@@ -98,6 +100,7 @@ public class Storage {
                         if (titlePosting.isPresent()) {
                             int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
                             wordFrequencyMap.put(word, titlePosting.get().getFrequency() + currentFrequency);
+                            titleWordPositionsMap.put(word, titlePosting.get().getPositions());
                         }
                     }
                 }
@@ -113,13 +116,14 @@ public class Storage {
                         if (bodyPosting.isPresent()) {
                             int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
                             wordFrequencyMap.put(word, bodyPosting.get().getFrequency() + currentFrequency);
+                            bodyWordPositionsMap.put(word, bodyPosting.get().getPositions());
                         }
                     }
                 }
 
                 // add result to output list
-                Result result = new Result(properties.getTitle(), url, properties.getSize(),
-                        properties.getLastModifiedAt(), wordFrequencyMap, childLinks);
+                Result result = new Result(url, properties, wordFrequencyMap, childLinks, titleWordPositionsMap,
+                        bodyWordPositionsMap);
                 results.add(result);
             } catch (IOException ignore) {
             }
@@ -175,19 +179,29 @@ public class Storage {
     }
 
     // update the document with the given doc id in the storage maps
-    public void updateDocument(Integer docId, Properties properties, List<String> titleWords, List<String> bodyWords)
+    public void updateDocument(Integer docId, Page page, List<String> titleWords, List<String> bodyWords)
             throws IOException {
-        // update properties map
-        propertiesMap.put(docId, properties);
-
-        // get word ids and frequencies
+        // get word ids
         List<Integer> titleWordIds = getWordIds(titleWords);
         List<Integer> bodyWordIds = getWordIds(bodyWords);
 
-        Map<Integer, Long> titleWordFrequencies = titleWordIds.stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
-        Map<Integer, Long> bodyWordFrequencies = bodyWordIds.stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        // get word positions
+        Map<Integer, Set<Integer>> titleWordPositions = new HashMap<Integer, Set<Integer>>();
+        Map<Integer, Set<Integer>> bodyWordPositions = new HashMap<Integer, Set<Integer>>();
+
+        for (int i = 0; i < titleWordIds.size(); i++) {
+            Integer wordId = titleWordIds.get(i);
+            Set<Integer> positions = titleWordPositions.getOrDefault(wordId, new HashSet<Integer>());
+            positions.add(i);
+            titleWordPositions.put(wordId, positions);
+        }
+
+        for (int i = 0; i < bodyWordIds.size(); i++) {
+            Integer wordId = bodyWordIds.get(i);
+            Set<Integer> positions = bodyWordPositions.getOrDefault(wordId, new HashSet<Integer>());
+            positions.add(i);
+            bodyWordPositions.put(wordId, positions);
+        }
 
         // get unique word ids
         Set<Integer> uniqueTitleWordIds = new HashSet<Integer>(titleWordIds);
@@ -198,8 +212,11 @@ public class Storage {
         bodyForwardIndexMap.put(docId, uniqueBodyWordIds);
 
         // update title inverted index
+        int maxTitleFrequency = 0;
         for (Integer wordId : uniqueTitleWordIds) {
-            Posting newPosting = new Posting(docId, titleWordFrequencies.get(wordId).intValue());
+            Set<Integer> wordPositions = titleWordPositions.get(wordId);
+            Posting newPosting = new Posting(docId, wordPositions.size(), wordPositions);
+            maxTitleFrequency = Math.max(maxTitleFrequency, newPosting.getFrequency());
 
             Set<Posting> currentPostings = titleInvertedIndexMap.get(wordId);
             if (currentPostings != null) {
@@ -214,8 +231,11 @@ public class Storage {
         }
 
         // update body inverted index
+        int maxBodyFrequency = 0;
         for (Integer wordId : uniqueBodyWordIds) {
-            Posting newPosting = new Posting(docId, bodyWordFrequencies.get(wordId).intValue());
+            Set<Integer> wordPositions = bodyWordPositions.get(wordId);
+            Posting newPosting = new Posting(docId, wordPositions.size(), wordPositions);
+            maxBodyFrequency = Math.max(maxBodyFrequency, newPosting.getFrequency());
 
             Set<Posting> currentPostings = bodyInvertedIndexMap.get(wordId);
             if (currentPostings != null) {
@@ -228,6 +248,11 @@ public class Storage {
                 bodyInvertedIndexMap.put(wordId, Set.of(newPosting));
             }
         }
+
+        // update properties map
+        Properties properties = new Properties(page.getTitle(), page.getSize(), page.getLastModifiedAt(),
+                maxTitleFrequency, maxBodyFrequency);
+        propertiesMap.put(docId, properties);
     }
 
     // update adjacency matrix map with new parent-child relationships

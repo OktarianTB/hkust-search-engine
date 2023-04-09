@@ -7,11 +7,15 @@ public class Properties implements Serializable {
     private String title;
     private int size;
     private Date lastModifiedAt;
+    private int maxTitleFrequency;
+    private int maxBodyFrequency;
 
-    public Properties(String title, int size, Date lastModifiedAt) {
+    public Properties(String title, int size, Date lastModifiedAt, int maxTitleFrequency, int maxBodyFrequency) {
         this.title = title;
         this.size = size;
         this.lastModifiedAt = lastModifiedAt;
+        this.maxTitleFrequency = maxTitleFrequency;
+        this.maxBodyFrequency = maxBodyFrequency;
     }
 
     public String getTitle() {
@@ -26,12 +30,22 @@ public class Properties implements Serializable {
         return this.lastModifiedAt;
     }
 
+    public int getMaxTitleFrequency() {
+        return this.maxTitleFrequency;
+    }
+
+    public int getMaxBodyFrequency() {
+        return this.maxBodyFrequency;
+    }
+
     @Override
     public String toString() {
         return "{" +
                 " title='" + getTitle() + "'" +
                 ", size='" + getSize() + "'" +
                 ", lastModifiedAt='" + getLastModifiedAt() + "'" +
+                ", maxTitleFrequency='" + getMaxTitleFrequency() + "'" +
+                ", maxBodyFrequency='" + getMaxBodyFrequency() + "'" +
                 "}";
     }
 }

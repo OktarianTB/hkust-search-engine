@@ -80,7 +80,7 @@ public class Crawler {
                     List<String> titleWords = getTransformedWords(page.getTitle());
                     List<String> bodyWords = getTransformedWords(page.getText());
 
-                    storage.updateDocument(docId, page.toProperties(), titleWords, bodyWords);
+                    storage.updateDocument(docId, page, titleWords, bodyWords);
                     storage.updateRelationships(docId, childDocIds);
                 }
             }
@@ -121,6 +121,6 @@ public class Crawler {
     }
 
     public static void main(String[] args) throws IOException {
-        new Crawler("https://cse.hkust.edu.hk/", 30);
+        new Crawler("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm", 30);
     }
 }

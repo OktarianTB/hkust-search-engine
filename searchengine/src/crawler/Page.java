@@ -3,9 +3,7 @@ package crawler;
 import java.util.Date;
 import java.util.List;
 
-import storage.Properties;
-
-class Page {
+public class Page {
     private String url;
     private String title;
     private String text;
@@ -46,19 +44,15 @@ class Page {
         return this.lastModifiedAt;
     }
 
-    public Properties toProperties() {
-        return new Properties(title, size, lastModifiedAt);
-    }
-
     @Override
     public String toString() {
         return "{" +
-            " url='" + getUrl() + "'" +
-            ", title='" + getTitle() + "'" +
-            ", text='" + getText() + "'" +
-            ", links='" + getLinks() + "'" +
-            ", size='" + getSize() + "'" +
-            ", lastModifiedAt='" + getLastModifiedAt() + "'" +
-            "}";
-    }    
+                " url='" + getUrl() + "'" +
+                ", title='" + getTitle() + "'" +
+                ", text='" + getText() + "'" +
+                ", links='" + getLinks() + "'" +
+                ", size='" + getSize() + "'" +
+                ", lastModifiedAt='" + getLastModifiedAt() + "'" +
+                "}";
+    }
 }
