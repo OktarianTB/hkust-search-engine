@@ -1,28 +1,26 @@
 package crawler;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.htmlparser.util.ParserException;
 
 import storage.Storage;
-import utilities.PorterStemmer;
-import utilities.StopWordsChecker;
+import utilities.TextParser;
 
 // the crawler class is responsible for crawling and indexing pages
 public class Crawler {
     private final static String STORAGE_NAME = "search_engine";
 
-    private int maxPagesToCrawl;
+    private final static int MAX_PAGES_TO_CRAWL = 30;
 
-    private PorterStemmer stemmer;
-    private StopWordsChecker stopWords;
+    private TextParser textParser;
+
+    private int maxPagesToCrawl;
 
     private Queue<String> urlsToVisit;
     private Set<String> visitedUrls;
@@ -32,8 +30,7 @@ public class Crawler {
     Crawler(String startUrl, int maxPagesToCrawl) throws IOException {
         this.maxPagesToCrawl = maxPagesToCrawl;
 
-        stemmer = new PorterStemmer();
-        stopWords = new StopWordsChecker();
+        textParser = new TextParser();
 
         urlsToVisit = new LinkedList<String>();
         urlsToVisit.add(startUrl);
@@ -77,37 +74,14 @@ public class Crawler {
                 }
 
                 if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
-                    List<String> titleWords = getTransformedWords(page.getTitle());
-                    List<String> bodyWords = getTransformedWords(page.getText());
+                    List<String> titleWords = textParser.parseWords(page.getTitle());
+                    List<String> bodyWords = textParser.parseWords(page.getText());
 
                     storage.updateDocument(docId, page, titleWords, bodyWords);
                     storage.updateRelationships(docId, childDocIds);
                 }
             }
         }
-    }
-
-    // transform text into a list of stemmed words
-    private List<String> getTransformedWords(String text) {
-        List<String> words = new ArrayList<String>();
-        StringTokenizer stringTokenizer = new StringTokenizer(text);
-
-        while (stringTokenizer.hasMoreTokens()) {
-            String word = stringTokenizer.nextToken().toLowerCase();
-
-            // ignore stop words
-            if (stopWords.isStopWord(word) || word.length() == 0) {
-                continue;
-            }
-
-            // Stem word and add to output list
-            String stemmedWord = stemmer.stem(word);
-            if (stemmedWord.length() > 0) {
-                words.add(stemmedWord);
-            }
-        }
-
-        return words;
     }
 
     // fetch a page from the given url
@@ -121,6 +95,6 @@ public class Crawler {
     }
 
     public static void main(String[] args) throws IOException {
-        new Crawler("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm", 30);
+        new Crawler("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm", MAX_PAGES_TO_CRAWL);
     }
 }
