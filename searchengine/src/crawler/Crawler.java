@@ -53,13 +53,16 @@ public class Crawler {
 
         while (pagesCrawled < maxPagesToCrawl && urlsToVisit.size() > 0) {
             String url = urlsToVisit.remove();
+
+            if (visitedUrls.contains(url)) {
+                continue;
+            }
+
             visitedUrls.add(url);
             Page page = getPage(url);
 
             if (page != null) {
-                System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle() + "\n\n");
-
-                pagesCrawled += 1;
+                System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle());
 
                 Integer docId = storage.getDocId(url);
 
@@ -68,9 +71,7 @@ public class Crawler {
                     Integer childDocId = storage.getDocId(link);
                     childDocIds.add(childDocId);
 
-                    if (!visitedUrls.contains(link)) {
-                        urlsToVisit.add(link);
-                    }
+                    urlsToVisit.add(link);
                 }
 
                 if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
@@ -80,6 +81,8 @@ public class Crawler {
                     storage.updateDocument(docId, page, titleWords, bodyWords);
                     storage.updateRelationships(docId, childDocIds);
                 }
+
+                pagesCrawled += 1;
             }
         }
     }
@@ -95,6 +98,6 @@ public class Crawler {
     }
 
     public static void main(String[] args) throws IOException {
-        new Crawler("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm", MAX_PAGES_TO_CRAWL);
+        new Crawler("https://cse.hkust.edu.hk/", MAX_PAGES_TO_CRAWL);
     }
 }

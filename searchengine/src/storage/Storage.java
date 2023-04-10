@@ -126,6 +126,7 @@ public class Storage {
                         bodyWordPositionsMap);
                 results.add(result);
             } catch (IOException ignore) {
+                System.out.println("Error getting results for doc id: " + docId);
             }
 
             docId = (Integer) iterator.next();

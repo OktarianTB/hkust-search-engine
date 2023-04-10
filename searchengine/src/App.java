@@ -22,8 +22,9 @@ public class App {
         List<Result> results = storage.getResults();
 
         StringBuilder sb = new StringBuilder();
-        for (Result result : results) {
-            sb.append(result.toString());
+        for (int i = 0; i < results.size(); i++) {
+            Result result = results.get(i);
+            sb.append(i + ": " + result.toString());
         }
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_NAME));
