@@ -3,23 +3,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import storage.Storage;
+import crawler.Indexer;
 import utilities.Result;
 
 public class App {
     private final static String STORAGE_NAME = "search_engine";
     private final static String OUTPUT_FILE_NAME = "spider_result.txt";
-    private Storage storage;
+    private Indexer indexer;
 
     public App() throws Exception {
-        storage = new Storage(STORAGE_NAME);
+        indexer = new Indexer(STORAGE_NAME);
         outputResults();
-        storage.commitAndClose();
+        indexer.commitAndClose();
     }
 
     // output results to file
     private void outputResults() throws IOException {
-        List<Result> results = storage.getResults();
+        List<Result> results = indexer.getResults();
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < results.size(); i++) {

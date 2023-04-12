@@ -7,7 +7,7 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * BodyInvertedIndexMap is a HashMap from Doc ID => Set of Body Postings
+ * BodyInvertedIndexMap is a HashMap from Word ID => Set of Body Postings
  */
 public class BodyInvertedIndexMap extends Map<Integer, Set<Posting>> {
     static final String MAP_OBJECT_NAME = "BodyInvertedIndexMap";

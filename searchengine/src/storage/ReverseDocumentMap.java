@@ -6,7 +6,7 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * DocumentForwardMap is a HashMap from Document ID => Doc URL
+ * DocumentForwardMap is a HashMap from Doc ID => Doc URL
  */
 public class ReverseDocumentMap extends Map<Integer, String> {
     static final String MAP_OBJECT_NAME = "ReverseDocumentMap";

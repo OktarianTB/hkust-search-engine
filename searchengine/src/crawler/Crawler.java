@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.htmlparser.util.ParserException;
 
-import storage.Storage;
 import utilities.TextParser;
 
 // the crawler class is responsible for crawling and indexing pages
@@ -25,7 +24,7 @@ public class Crawler {
     private Queue<String> urlsToVisit;
     private Set<String> visitedUrls;
 
-    private Storage storage;
+    private Indexer indexer;
 
     Crawler(String startUrl, int maxPagesToCrawl) throws IOException {
         this.maxPagesToCrawl = maxPagesToCrawl;
@@ -38,13 +37,13 @@ public class Crawler {
         visitedUrls = new HashSet<String>();
 
         // initialize all storage maps
-        storage = new Storage(STORAGE_NAME);
+        indexer = new Indexer(STORAGE_NAME);
 
         // crawl and index
         crawlAndIndex();
 
         // commit db changes
-        storage.commitAndClose();
+        indexer.commitAndClose();
     }
 
     // crawl and index pages
@@ -62,24 +61,24 @@ public class Crawler {
             Page page = getPage(url);
 
             if (page != null) {
-                System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle());
+                System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle() + "\n");
 
-                Integer docId = storage.getDocId(url);
+                Integer docId = indexer.getDocId(url);
 
                 Set<Integer> childDocIds = new HashSet<Integer>();
                 for (String link : page.getLinks()) {
-                    Integer childDocId = storage.getDocId(link);
+                    Integer childDocId = indexer.getDocId(link);
                     childDocIds.add(childDocId);
 
                     urlsToVisit.add(link);
                 }
 
-                if (storage.docNeedsUpdating(docId, page.getLastModifiedAt())) {
+                if (indexer.docNeedsUpdating(docId, page.getLastModifiedAt())) {
                     List<String> titleWords = textParser.parseWords(page.getTitle());
                     List<String> bodyWords = textParser.parseWords(page.getText());
 
-                    storage.updateDocument(docId, page, titleWords, bodyWords);
-                    storage.updateRelationships(docId, childDocIds);
+                    indexer.updateDocument(docId, page, titleWords, bodyWords);
+                    indexer.updateRelationships(docId, childDocIds);
                 }
 
                 pagesCrawled += 1;
@@ -98,6 +97,6 @@ public class Crawler {
     }
 
     public static void main(String[] args) throws IOException {
-        new Crawler("https://cse.hkust.edu.hk/", MAX_PAGES_TO_CRAWL);
+        new Crawler("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm", MAX_PAGES_TO_CRAWL);
     }
 }

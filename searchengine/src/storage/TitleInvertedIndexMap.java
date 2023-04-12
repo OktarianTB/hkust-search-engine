@@ -7,7 +7,7 @@ import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * TitleInvertedIndexMap is a HashMap from Doc ID => Set of Title Postings
+ * TitleInvertedIndexMap is a HashMap from Word ID => Set of Title Postings
  */
 public class TitleInvertedIndexMap extends Map<Integer, Set<Posting>> {
     static final String MAP_OBJECT_NAME = "TitleInvertedIndexMap";
