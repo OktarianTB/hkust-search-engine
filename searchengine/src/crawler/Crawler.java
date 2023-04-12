@@ -9,12 +9,11 @@ import java.util.Set;
 
 import org.htmlparser.util.ParserException;
 
+import utilities.Constants;
 import utilities.TextParser;
 
 // the crawler class is responsible for crawling and indexing pages
 public class Crawler {
-    private final static String STORAGE_NAME = "search_engine";
-
     private final static int MAX_PAGES_TO_CRAWL = 30;
 
     private TextParser textParser;
@@ -37,7 +36,7 @@ public class Crawler {
         visitedUrls = new HashSet<String>();
 
         // initialize all storage maps
-        indexer = new Indexer(STORAGE_NAME);
+        indexer = new Indexer(Constants.STORAGE_NAME);
 
         // crawl and index
         crawlAndIndex();

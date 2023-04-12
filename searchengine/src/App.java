@@ -4,15 +4,15 @@ import java.io.IOException;
 import java.util.List;
 
 import crawler.Indexer;
+import utilities.Constants;
 import utilities.Result;
 
 public class App {
-    private final static String STORAGE_NAME = "search_engine";
     private final static String OUTPUT_FILE_NAME = "spider_result.txt";
     private Indexer indexer;
 
     public App() throws Exception {
-        indexer = new Indexer(STORAGE_NAME);
+        indexer = new Indexer(Constants.STORAGE_NAME);
         outputResults();
         indexer.commitAndClose();
     }

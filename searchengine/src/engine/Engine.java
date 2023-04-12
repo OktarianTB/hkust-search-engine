@@ -5,18 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import storage.Storage;
+import utilities.Constants;
 import utilities.Result;
 import utilities.TextParser;
 
 class Engine {
-    private final static String STORAGE_NAME = "search_engine";
     private Storage storage;
     private TextParser textParser;
 
     public Engine() throws IOException {
         textParser = new TextParser();
 
-        storage = new Storage(STORAGE_NAME);
+        storage = new Storage(Constants.STORAGE_NAME);
 
         storage.commitAndClose();
     }
