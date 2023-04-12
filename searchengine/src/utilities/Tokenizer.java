@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class TextParser {
+public class Tokenizer {
     private PorterStemmer stemmer;
     private StopWordsChecker stopWords;
 
-    public TextParser() {
+    public Tokenizer() {
         stemmer = new PorterStemmer();
         stopWords = new StopWordsChecker();
     }
 
     // transform text into a list of stemmed words
-    public List<String> parseWords(String text) {
+    public List<String> tokenize(String text) {
         List<String> words = new ArrayList<String>();
         StringTokenizer stringTokenizer = new StringTokenizer(text);
 

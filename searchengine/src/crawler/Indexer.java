@@ -114,7 +114,7 @@ public class Indexer extends Storage {
     }
 
     // get the word id for the given url if it exists, else create a new word id
-    public Integer getWordId(String word) throws IOException {
+    private Integer getWordId(String word) throws IOException {
         Integer wordId = wordMap.get(word);
         if (wordId == null) {
             wordId = wordMap.getNextWordId();
@@ -125,7 +125,7 @@ public class Indexer extends Storage {
     }
 
     // returns the list of word ids for the given list of words
-    public List<Integer> getWordIds(List<String> words) throws IOException {
+    private List<Integer> getWordIds(List<String> words) throws IOException {
         List<Integer> wordIds = new ArrayList<Integer>();
 
         for (String word : words) {

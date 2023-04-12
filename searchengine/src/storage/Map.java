@@ -40,4 +40,5 @@ public class Map<K, V> {
 	public FastIterator keys() throws IOException {
 		return hashTable.keys();
 	}
+
 }

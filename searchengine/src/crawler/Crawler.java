@@ -10,13 +10,11 @@ import java.util.Set;
 import org.htmlparser.util.ParserException;
 
 import utilities.Constants;
-import utilities.TextParser;
+import utilities.Tokenizer;
 
 // the crawler class is responsible for crawling and indexing pages
 public class Crawler {
-    private final static int MAX_PAGES_TO_CRAWL = 30;
-
-    private TextParser textParser;
+    private Tokenizer tokenizer;
 
     private int maxPagesToCrawl;
 
@@ -28,7 +26,7 @@ public class Crawler {
     Crawler(String startUrl, int maxPagesToCrawl) throws IOException {
         this.maxPagesToCrawl = maxPagesToCrawl;
 
-        textParser = new TextParser();
+        tokenizer = new Tokenizer();
 
         urlsToVisit = new LinkedList<String>();
         urlsToVisit.add(startUrl);
@@ -73,8 +71,8 @@ public class Crawler {
                 }
 
                 if (indexer.docNeedsUpdating(docId, page.getLastModifiedAt())) {
-                    List<String> titleWords = textParser.parseWords(page.getTitle());
-                    List<String> bodyWords = textParser.parseWords(page.getText());
+                    List<String> titleWords = tokenizer.tokenize(page.getTitle());
+                    List<String> bodyWords = tokenizer.tokenize(page.getText());
 
                     indexer.updateDocument(docId, page, titleWords, bodyWords);
                     indexer.updateRelationships(docId, childDocIds);
@@ -96,6 +94,6 @@ public class Crawler {
     }
 
     public static void main(String[] args) throws IOException {
-        new Crawler("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm", MAX_PAGES_TO_CRAWL);
+        new Crawler("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm", Constants.NUMBER_OF_DOCUMENTS);
     }
 }

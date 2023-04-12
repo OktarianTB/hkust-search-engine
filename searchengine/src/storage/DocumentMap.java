@@ -23,11 +23,11 @@ public class DocumentMap extends Map<String, Integer> {
     // Returns the next available ID to use and updates internally
     // Non-deterministic so to be used with caution
     public Integer getNextDocId() throws IOException {
-        // get current max ID
-        Integer nextDocId = get(CURRENT_MAX_ID_KEYWORD) + 1;
+        // get next doc ID
+        Integer nextDocId = get(CURRENT_MAX_ID_KEYWORD);
 
-        // update to new max ID
-        put(CURRENT_MAX_ID_KEYWORD, nextDocId);
+        // update the new max ID
+        put(CURRENT_MAX_ID_KEYWORD, nextDocId + 1);
 
         return nextDocId;
     }
