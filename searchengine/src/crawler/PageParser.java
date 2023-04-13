@@ -33,6 +33,11 @@ class PageParser {
         try {
             String title = getPageTitle();
             String text = getPageText();
+
+            if (text.startsWith(title)) {
+                text = text.substring(title.length());
+            }
+
             List<String> links = getPageLinks();
             int size = getPageSize();
             Date lastModifiedAt = getPageLastModifiedAt();
@@ -49,9 +54,9 @@ class PageParser {
     private String getPageTitle() throws ParserException {
         String title = "No Title";
         NodeFilter titleFilter = new NodeClassFilter(TitleTag.class);
-        NodeList titleList = parser.extractAllNodesThatMatch(titleFilter);
-        if (titleList.size() > 0) {
-            TitleTag titleTag = (TitleTag) titleList.elementAt(0);
+        NodeList titleNodes = parser.extractAllNodesThatMatch(titleFilter);
+        if (titleNodes.size() > 0) {
+            TitleTag titleTag = (TitleTag) titleNodes.elementAt(0);
             if (titleTag != null) {
                 title = titleTag.getTitle();
             }
