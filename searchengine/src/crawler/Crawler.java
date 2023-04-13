@@ -57,6 +57,10 @@ public class Crawler {
             visitedUrls.add(url);
             Page page = getPage(url);
 
+            if (url.equals("https://www.cse.ust.hk/~kwtleung/COMP4321/ust_cse.htm")) {
+                System.out.println("here");
+            }
+
             if (page != null) {
                 System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle() + "\n");
 

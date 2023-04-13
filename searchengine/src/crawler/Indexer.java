@@ -53,8 +53,8 @@ public class Indexer extends Storage {
                 // combine the title and body word ids into one set of words and their
                 // frequencies
                 Map<String, Integer> wordFrequencyMap = new HashMap<String, Integer>();
-                Map<String, Set<Integer>> titleWordPositionsMap = new HashMap<String, Set<Integer>>();
-                Map<String, Set<Integer>> bodyWordPositionsMap = new HashMap<String, Set<Integer>>();
+                Map<String, Set<Integer>> titleWordPositionsMap = new HashMap<String, Set<Integer>>(); // todo: remove
+                Map<String, Set<Integer>> bodyWordPositionsMap = new HashMap<String, Set<Integer>>(); // todo: remove
 
                 Set<Integer> titleWordIds = titleForwardIndexMap.get(docId);
                 for (Integer wordId : titleWordIds) {
@@ -89,8 +89,7 @@ public class Indexer extends Storage {
                 }
 
                 // add result to output list
-                Result result = new Result(url, properties, wordFrequencyMap, childLinks, titleWordPositionsMap,
-                        bodyWordPositionsMap);
+                Result result = new Result(0, url, properties, wordFrequencyMap, childLinks);
                 results.add(result);
             } catch (IOException ignore) {
                 System.out.println("Error getting results for doc id: " + docId);
