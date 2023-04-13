@@ -150,7 +150,7 @@ class Engine {
 
     public static void main(String[] args) throws Exception {
         Engine searchEngine = new Engine();
-        List<Result> results = searchEngine.search("data information");
+        List<Result> results = searchEngine.search("hkust academics");
         
         for (Result result : results) {
             System.out.println(result);
