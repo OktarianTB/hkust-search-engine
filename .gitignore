@@ -33,3 +33,8 @@ hs_err_pid*
 
 # outputs
 searchengine/spider_result.txt
+
+
+# frontend
+frontend/node_modules/
+frontend/package-lock.json
