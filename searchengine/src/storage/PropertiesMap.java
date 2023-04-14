@@ -8,7 +8,7 @@ import jdbm.helper.FastIterator;
 /*
  * PropertiesMap is a HashMap from Doc ID => Document Properties
  */
-public class PropertiesMap extends Map<Integer, Properties> {
+public class PropertiesMap extends BaseMap<Integer, Properties> {
     static final String MAP_OBJECT_NAME = "PropertiesMap";
 
     public PropertiesMap(RecordManager recordManager) throws IOException {

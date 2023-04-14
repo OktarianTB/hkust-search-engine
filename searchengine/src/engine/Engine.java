@@ -37,21 +37,22 @@ class Engine {
         }
 
         int vocabularySize = retriever.getNumberOfWords();
+        int numberOfDocs = retriever.getNumberOfDocuments();
 
-        double[] queryVector = calculateQueryVector(queryWordIds, vocabularySize);
+        double[] queryVector = calculateQueryVector(queryWordIds, vocabularySize, numberOfDocs);
 
         Set<Integer> relevantDocuments = new HashSet<Integer>();
         for (Integer wordId : queryWordIds) {
-            Set<Posting> titlePostings = retriever.getTitlePostings(wordId);
-            Set<Posting> bodyPostings = retriever.getBodyPostings(wordId);
+            Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordId);
+            Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordId);
 
-            relevantDocuments.addAll(titlePostings.stream().map(Posting::getDocId).collect(Collectors.toSet()));
-            relevantDocuments.addAll(bodyPostings.stream().map(Posting::getDocId).collect(Collectors.toSet()));
+            relevantDocuments.addAll(titlePostings.keySet());
+            relevantDocuments.addAll(bodyPostings.keySet());
         }
 
         Map<Integer, double[]> documentVectors = new HashMap<Integer, double[]>();
         for (Integer docId : relevantDocuments) {
-            double[] documentVector = calculateDocumentVector(docId, vocabularySize);
+            double[] documentVector = calculateDocumentVector(docId, vocabularySize, numberOfDocs);
             documentVectors.put(docId, documentVector);
         }
 
@@ -73,7 +74,7 @@ class Engine {
         return documentSimilarities;
     }
 
-    private double[] calculateDocumentVector(Integer docId, int vocabularySize) throws IOException {
+    private double[] calculateDocumentVector(Integer docId, int vocabularySize, int N) throws IOException {
         double[] documentVector = new double[vocabularySize];
 
         Set<Integer> titleWordIds = retriever.getTitleWordIds(docId);
@@ -82,21 +83,22 @@ class Engine {
         wordIds.addAll(titleWordIds);
         wordIds.addAll(bodyWordIds);
 
-        int N = Constants.NUMBER_OF_DOCUMENTS;
         int tfmax = 1;
 
         for (Integer wordId : wordIds) {
-            Set<Posting> titlePostings = retriever.getTitlePostings(wordId);
-            Set<Posting> bodyPostings = retriever.getBodyPostings(wordId);
+            Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordId);
+            Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordId);
 
-            int tf_title = titlePostings.stream().filter(p -> p.getDocId().equals(docId)).map(Posting::getFrequency)
-                    .findFirst().orElse(0);
-            int tf_body = bodyPostings.stream().filter(p -> p.getDocId().equals(docId)).map(Posting::getFrequency)
-                    .findFirst().orElse(0);
+            Posting titlePosting = titlePostings.get(docId);
+            Posting bodyPosting = bodyPostings.get(docId);
+
+            int tf_title = titlePosting != null ? titlePosting.getFrequency() : 0;
+            int tf_body = bodyPosting != null ? bodyPosting.getFrequency() : 0;
 
             int df = getDocumentFrequency(titlePostings, bodyPostings);
             tfmax = Math.max(tfmax, tf_title + tf_body);
 
+            // todo: fix title weight
             double tf_idf_title = calculateTermWeighting(tf_title, df, N) * Constants.TITLE_WEIGHT;
             double tf_idf_body = calculateTermWeighting(tf_body, df, N);
 
@@ -110,13 +112,12 @@ class Engine {
         return documentVector;
     }
 
-    private double[] calculateQueryVector(List<Integer> queryWordsIds, int vocabularySize) throws IOException {
+    private double[] calculateQueryVector(List<Integer> queryWordsIds, int vocabularySize, int N) throws IOException {
         double[] queryVector = new double[vocabularySize];
 
         Map<Integer, Long> wordFrequencies = queryWordsIds.stream()
                 .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
-        int N = Constants.NUMBER_OF_DOCUMENTS;
         int tfmax = wordFrequencies.values().stream().max(Long::compare).get().intValue();
 
         for (Integer wordId : wordFrequencies.keySet()) {
@@ -142,9 +143,9 @@ class Engine {
         return Math.log(x) / Math.log(2);
     }
 
-    private int getDocumentFrequency(Set<Posting> titlePostings, Set<Posting> bodyPostings) {
-        Set<Integer> uniqueDocIds = titlePostings.stream().map(Posting::getDocId).collect(Collectors.toSet());
-        uniqueDocIds.addAll(bodyPostings.stream().map(Posting::getDocId).collect(Collectors.toSet()));
+    private int getDocumentFrequency(Map<Integer, Posting> titlePostings, Map<Integer, Posting> bodyPostings) {
+        Set<Integer> uniqueDocIds = new HashSet<Integer>(titlePostings.keySet());
+        uniqueDocIds.addAll(bodyPostings.keySet());
         return uniqueDocIds.size();
     }
 

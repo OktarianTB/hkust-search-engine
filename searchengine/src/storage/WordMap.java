@@ -8,7 +8,7 @@ import jdbm.helper.FastIterator;
 /*
  * WordMap is a HashMap from Word => Word ID
  */
-public class WordMap extends Map<String, Integer> {
+public class WordMap extends BaseMap<String, Integer> {
     static final String MAP_OBJECT_NAME = "WordMap";
     static final String CURRENT_MAX_ID_KEYWORD = "CURRENT_MAX_ID_KEYWORD";
 

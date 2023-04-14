@@ -9,7 +9,7 @@ import jdbm.helper.FastIterator;
 /*
  * TitleForwardIndexMap is a HashMap from Doc ID => Doc Title Keywords (Word IDs)
  */
-public class TitleForwardIndexMap extends Map<Integer, Set<Integer>> {
+public class TitleForwardIndexMap extends BaseMap<Integer, Set<Integer>> {
     static final String PAGE_MAP_OBJECT_NAME = "TitleForwardIndexMap";
 
     public TitleForwardIndexMap(RecordManager recordManager) throws IOException {

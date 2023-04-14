@@ -1,15 +1,15 @@
 package storage;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Map;
 
 import jdbm.RecordManager;
 import jdbm.helper.FastIterator;
 
 /*
- * TitleInvertedIndexMap is a HashMap from Word ID => Set of Title Postings
+ * TitleInvertedIndexMap is a HashMap from Word ID => Map of Doc Id => Title Postings
  */
-public class TitleInvertedIndexMap extends Map<Integer, Set<Posting>> {
+public class TitleInvertedIndexMap extends BaseMap<Integer, Map<Integer, Posting>> {
     static final String MAP_OBJECT_NAME = "TitleInvertedIndexMap";
 
     public TitleInvertedIndexMap(RecordManager recordManager) throws IOException {

@@ -8,7 +8,7 @@ import jdbm.helper.FastIterator;
 /*
  * DocumentMap is a HashMap from Document URL => Doc ID
  */
-public class DocumentMap extends Map<String, Integer> {
+public class DocumentMap extends BaseMap<String, Integer> {
     static final String MAP_OBJECT_NAME = "DocumentMap";
     static final String CURRENT_MAX_ID_KEYWORD = "CURRENT_MAX_ID_KEYWORD";
 

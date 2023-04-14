@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import jdbm.helper.FastIterator;
@@ -60,14 +59,13 @@ public class Indexer extends Storage {
                 for (Integer wordId : titleWordIds) {
                     String word = reverseWordMap.get(wordId);
 
-                    Set<Posting> titlePostings = titleInvertedIndexMap.get(wordId);
+                    Map<Integer, Posting> titlePostings = titleInvertedIndexMap.get(wordId);
                     if (titlePostings != null) {
-                        Optional<Posting> titlePosting = titlePostings.stream()
-                                .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
-                        if (titlePosting.isPresent()) {
+                        Posting titlePosting = titlePostings.get(innerDocId);
+                        if (titlePosting != null) {
                             int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
-                            wordFrequencyMap.put(word, titlePosting.get().getFrequency() + currentFrequency);
-                            titleWordPositionsMap.put(word, titlePosting.get().getPositions());
+                            wordFrequencyMap.put(word, titlePosting.getFrequency() + currentFrequency);
+                            titleWordPositionsMap.put(word, titlePosting.getPositions());
                         }
                     }
                 }
@@ -76,14 +74,13 @@ public class Indexer extends Storage {
                 for (Integer wordId : bodyWordIds) {
                     String word = reverseWordMap.get(wordId);
 
-                    Set<Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
+                    Map<Integer, Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
                     if (bodyPostings != null) {
-                        Optional<Posting> bodyPosting = bodyPostings.stream()
-                                .filter(posting -> posting.getDocId().equals(innerDocId)).findFirst();
-                        if (bodyPosting.isPresent()) {
+                        Posting bodyPosting = bodyPostings.get(innerDocId);
+                        if (bodyPosting != null) {
                             int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
-                            wordFrequencyMap.put(word, bodyPosting.get().getFrequency() + currentFrequency);
-                            bodyWordPositionsMap.put(word, bodyPosting.get().getPositions());
+                            wordFrequencyMap.put(word, bodyPosting.getFrequency() + currentFrequency);
+                            bodyWordPositionsMap.put(word, bodyPosting.getPositions());
                         }
                     }
                 }
@@ -182,18 +179,17 @@ public class Indexer extends Storage {
         int maxTitleFrequency = 0;
         for (Integer wordId : uniqueTitleWordIds) {
             Set<Integer> wordPositions = titleWordPositions.get(wordId);
-            Posting newPosting = new Posting(docId, wordPositions.size(), wordPositions);
+            Posting newPosting = new Posting(wordPositions.size(), wordPositions);
             maxTitleFrequency = Math.max(maxTitleFrequency, newPosting.getFrequency());
 
-            Set<Posting> currentPostings = titleInvertedIndexMap.get(wordId);
-            if (currentPostings != null) {
-                // remove the old posting for this doc id (if it exists) and add the new posting
-                Set<Posting> newPostings = new HashSet<Posting>(currentPostings);
-                newPostings.removeIf(posting -> posting.getDocId().equals(docId));
-                newPostings.add(newPosting);
-                titleInvertedIndexMap.put(wordId, newPostings);
+            Map<Integer, Posting> currentDocIdToPostingsMap = titleInvertedIndexMap.get(wordId);
+            if (currentDocIdToPostingsMap != null) {
+                // update the posting map for this word id
+                Map<Integer, Posting> newDocIdToPostingsMap = new HashMap<Integer, Posting>(currentDocIdToPostingsMap);
+                newDocIdToPostingsMap.put(docId, newPosting);
+                titleInvertedIndexMap.put(wordId, newDocIdToPostingsMap);
             } else {
-                titleInvertedIndexMap.put(wordId, Set.of(newPosting));
+                titleInvertedIndexMap.put(wordId, Map.of(docId, newPosting));
             }
         }
 
@@ -201,18 +197,17 @@ public class Indexer extends Storage {
         int maxBodyFrequency = 0;
         for (Integer wordId : uniqueBodyWordIds) {
             Set<Integer> wordPositions = bodyWordPositions.get(wordId);
-            Posting newPosting = new Posting(docId, wordPositions.size(), wordPositions);
+            Posting newPosting = new Posting(wordPositions.size(), wordPositions);
             maxBodyFrequency = Math.max(maxBodyFrequency, newPosting.getFrequency());
 
-            Set<Posting> currentPostings = bodyInvertedIndexMap.get(wordId);
-            if (currentPostings != null) {
-                // remove the old posting for this doc id (if it exists) and add the new posting
-                Set<Posting> newPostings = new HashSet<Posting>(currentPostings);
-                newPostings.removeIf(posting -> posting.getDocId().equals(docId));
-                newPostings.add(newPosting);
-                bodyInvertedIndexMap.put(wordId, newPostings);
+            Map<Integer, Posting> currentDocIdToPostingsMap = bodyInvertedIndexMap.get(wordId);
+            if (currentDocIdToPostingsMap != null) {
+                // update the posting map for this word id
+                Map<Integer, Posting> newDocIdToPostingsMap = new HashMap<Integer, Posting>(currentDocIdToPostingsMap);
+                newDocIdToPostingsMap.put(docId, newPosting);
+                bodyInvertedIndexMap.put(wordId, newDocIdToPostingsMap);
             } else {
-                bodyInvertedIndexMap.put(wordId, Set.of(newPosting));
+                bodyInvertedIndexMap.put(wordId, Map.of(docId, newPosting));
             }
         }
 

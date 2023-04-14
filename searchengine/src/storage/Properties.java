@@ -7,8 +7,8 @@ public class Properties implements Serializable {
     private String title;
     private int size;
     private Date lastModifiedAt;
-    private int maxTitleFrequency; // todo: remove
-    private int maxBodyFrequency; // todo: remove
+    private int maxTitleFrequency;
+    private int maxBodyFrequency;
 
     public Properties(String title, int size, Date lastModifiedAt, int maxTitleFrequency, int maxBodyFrequency) {
         this.title = title;

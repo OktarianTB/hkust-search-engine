@@ -7,10 +7,10 @@ import jdbm.htree.HTree;
 import java.io.IOException;
 
 // this class is a wrapper around the HTree class from the JDBM library
-public class Map<K, V> {
+public class BaseMap<K, V> {
 	protected HTree hashTable;
 
-	public Map(RecordManager recordManager, String objectName) throws IOException {
+	public BaseMap(RecordManager recordManager, String objectName) throws IOException {
 		long recid = recordManager.getNamedObject(objectName);
 		if (recid != 0) {
 			hashTable = HTree.load(recordManager, recid);

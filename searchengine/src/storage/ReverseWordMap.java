@@ -8,7 +8,7 @@ import jdbm.helper.FastIterator;
 /*
  * ReverseWordMap is a HashMap from Word ID => Word
  */
-public class ReverseWordMap extends Map<Integer, String> {
+public class ReverseWordMap extends BaseMap<Integer, String> {
     static final String MAP_OBJECT_NAME = "ReverseWordMap";
 
     public ReverseWordMap(RecordManager recordManager) throws IOException {

@@ -9,7 +9,7 @@ import jdbm.helper.FastIterator;
 /*
  * BodyForwardIndexMap is a HashMap from Doc ID => Doc Body Keywords (Word IDs)
  */
-public class BodyForwardIndexMap extends Map<Integer, Set<Integer>> {
+public class BodyForwardIndexMap extends BaseMap<Integer, Set<Integer>> {
     static final String PAGE_MAP_OBJECT_NAME = "BodyForwardIndexMap";
 
     public BodyForwardIndexMap(RecordManager recordManager) throws IOException {
