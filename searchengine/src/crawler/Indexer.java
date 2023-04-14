@@ -9,93 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jdbm.helper.FastIterator;
 import storage.Posting;
 import storage.Properties;
 import storage.Relationship;
 import storage.Storage;
-import utilities.Result;
 
 // this class is responsible for indexing documents (read/write)
 public class Indexer extends Storage {
 
     public Indexer(String recordManagerName) throws IOException {
         super(recordManagerName);
-    }
-
-    // create a list of results containing all the information needed for the test
-    // program
-    public List<Result> getResults() throws IOException {
-        List<Result> results = new ArrayList<Result>();
-
-        // iterate through all the documents in the properties map, which only contains
-        // fully indexed pages
-        FastIterator iterator = propertiesMap.keys();
-        Integer docId = (Integer) iterator.next();
-
-        while (docId != null) {
-            final int innerDocId = docId;
-
-            try {
-                String url = reverseDocumentMap.get(docId);
-                Properties properties = propertiesMap.get(docId);
-
-                Relationship relationship = adjacencyMap.get(docId);
-                // for every child doc id, get the url from the reverse document map and add it
-                // to the list of child links
-                List<String> childLinks = new ArrayList<String>();
-                for (Integer childDocId : relationship.getChildDocIds()) {
-                    String childLink = reverseDocumentMap.get(childDocId);
-                    childLinks.add(childLink);
-                }
-
-                // combine the title and body word ids into one set of words and their
-                // frequencies
-                Map<String, Integer> wordFrequencyMap = new HashMap<String, Integer>();
-                Map<String, Set<Integer>> titleWordPositionsMap = new HashMap<String, Set<Integer>>(); // todo: remove
-                Map<String, Set<Integer>> bodyWordPositionsMap = new HashMap<String, Set<Integer>>(); // todo: remove
-
-                Set<Integer> titleWordIds = titleForwardIndexMap.get(docId);
-                for (Integer wordId : titleWordIds) {
-                    String word = reverseWordMap.get(wordId);
-
-                    Map<Integer, Posting> titlePostings = titleInvertedIndexMap.get(wordId);
-                    if (titlePostings != null) {
-                        Posting titlePosting = titlePostings.get(innerDocId);
-                        if (titlePosting != null) {
-                            int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
-                            wordFrequencyMap.put(word, titlePosting.getFrequency() + currentFrequency);
-                            titleWordPositionsMap.put(word, titlePosting.getPositions());
-                        }
-                    }
-                }
-
-                Set<Integer> bodyWordIds = bodyForwardIndexMap.get(docId);
-                for (Integer wordId : bodyWordIds) {
-                    String word = reverseWordMap.get(wordId);
-
-                    Map<Integer, Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
-                    if (bodyPostings != null) {
-                        Posting bodyPosting = bodyPostings.get(innerDocId);
-                        if (bodyPosting != null) {
-                            int currentFrequency = wordFrequencyMap.getOrDefault(word, 0);
-                            wordFrequencyMap.put(word, bodyPosting.getFrequency() + currentFrequency);
-                            bodyWordPositionsMap.put(word, bodyPosting.getPositions());
-                        }
-                    }
-                }
-
-                // add result to output list
-                Result result = new Result(0, url, properties, wordFrequencyMap, childLinks);
-                results.add(result);
-            } catch (IOException ignore) {
-                System.out.println("Error getting results for doc id: " + docId);
-            }
-
-            docId = (Integer) iterator.next();
-        }
-
-        return results;
     }
 
     // get the doc id for the given url if it exists, else create a new doc id
