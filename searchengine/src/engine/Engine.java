@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import storage.Posting;
 import utilities.Constants;
-import utilities.CosineSimilarity;
 import utilities.Result;
 import utilities.Tokenizer;
 
@@ -41,6 +40,18 @@ class Engine {
 
         double[] queryVector = calculateQueryVector(queryWordIds, vocabularySize, numberOfDocs);
 
+        Set<Integer> relevantDocuments = getRelevantDocuments(queryWordIds);
+
+        Map<Integer, double[]> documentVectors = getDocumentVectors(vocabularySize, numberOfDocs, relevantDocuments);
+
+        Map<Integer, Double> documentSimilarities = CosineSimilarity.getDocumentSimilarities(queryVector,
+                documentVectors);
+        List<Result> rankedResults = retriever.getRankedResults(documentSimilarities);
+
+        return rankedResults;
+    }
+
+    private Set<Integer> getRelevantDocuments(List<Integer> queryWordIds) throws IOException {
         Set<Integer> relevantDocuments = new HashSet<Integer>();
         for (Integer wordId : queryWordIds) {
             Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordId);
@@ -49,39 +60,24 @@ class Engine {
             relevantDocuments.addAll(titlePostings.keySet());
             relevantDocuments.addAll(bodyPostings.keySet());
         }
+        return relevantDocuments;
+    }
 
+    private Map<Integer, double[]> getDocumentVectors(int vocabularySize, int numberOfDocs,
+            Set<Integer> relevantDocuments)
+            throws IOException {
         Map<Integer, double[]> documentVectors = new HashMap<Integer, double[]>();
         for (Integer docId : relevantDocuments) {
             double[] documentVector = calculateDocumentVector(docId, vocabularySize, numberOfDocs);
             documentVectors.put(docId, documentVector);
         }
-
-        Map<Integer, Double> documentSimilarities = getDocumentSimilarities(queryVector, documentVectors);
-        List<Result> rankedResults = retriever.getRankedResults(documentSimilarities);
-
-        return rankedResults;
-    }
-
-    private Map<Integer, Double> getDocumentSimilarities(double[] queryVector, Map<Integer, double[]> documentVectors) {
-        Map<Integer, Double> documentSimilarities = new HashMap<Integer, Double>();
-        
-        for (Integer docId : documentVectors.keySet()) {
-            double[] documentVector = documentVectors.get(docId);
-            double cosineSimilarity = CosineSimilarity.calculate(queryVector, documentVector);
-            documentSimilarities.put(docId, cosineSimilarity);
-        }
-
-        return documentSimilarities;
+        return documentVectors;
     }
 
     private double[] calculateDocumentVector(Integer docId, int vocabularySize, int N) throws IOException {
         double[] documentVector = new double[vocabularySize];
 
-        Set<Integer> titleWordIds = retriever.getTitleWordIds(docId);
-        Set<Integer> bodyWordIds = retriever.getBodyWordIds(docId);
-        Set<Integer> wordIds = new HashSet<Integer>();
-        wordIds.addAll(titleWordIds);
-        wordIds.addAll(bodyWordIds);
+        Set<Integer> wordIds = retriever.getDocumentWordIds(docId);
 
         int tfmax = 1;
 
@@ -99,14 +95,14 @@ class Engine {
             tfmax = Math.max(tfmax, tf_title + tf_body);
 
             // todo: fix title weight
-            double tf_idf_title = calculateTermWeighting(tf_title, df, N) * Constants.TITLE_WEIGHT;
-            double tf_idf_body = calculateTermWeighting(tf_body, df, N);
+            double tf_idf_title = TfIdf.calculateTermWeighting(tf_title, df, N) * Constants.TITLE_WEIGHT;
+            double tf_idf_body = TfIdf.calculateTermWeighting(tf_body, df, N);
 
             documentVector[wordId] = tf_idf_title + tf_idf_body;
         }
 
         for (int i = 0; i < documentVector.length; i++) {
-            documentVector[i] = normalizeTermWeighting(documentVector[i], tfmax);
+            documentVector[i] = TfIdf.normalizeTermWeighting(documentVector[i], tfmax);
         }
 
         return documentVector;
@@ -124,23 +120,11 @@ class Engine {
             int tf = wordFrequencies.get(wordId).intValue();
             int df = getDocumentFrequency(retriever.getTitlePostings(wordId), retriever.getBodyPostings(wordId));
 
-            double tf_idf = normalizeTermWeighting(calculateTermWeighting(tf, df, N), tfmax);
+            double tf_idf = TfIdf.normalizeTermWeighting(TfIdf.calculateTermWeighting(tf, df, N), tfmax);
             queryVector[wordId] = tf_idf;
         }
 
         return queryVector;
-    }
-
-    private double normalizeTermWeighting(double termWeighting, int tfmax) {
-        return termWeighting / tfmax;
-    }
-
-    private double calculateTermWeighting(int tf, int df, int N) {
-        return tf * log2(N / df);
-    }
-
-    private static double log2(int x) {
-        return Math.log(x) / Math.log(2);
     }
 
     private int getDocumentFrequency(Map<Integer, Posting> titlePostings, Map<Integer, Posting> bodyPostings) {
@@ -151,11 +135,13 @@ class Engine {
 
     public static void main(String[] args) throws Exception {
         Engine searchEngine = new Engine();
-        List<Result> results = searchEngine.search("hkust academics");
-        
+        List<Result> results = searchEngine.search("movie");
+
         for (Result result : results) {
             System.out.println(result);
         }
+
+        System.out.println("Number of results: " + results.size());
 
         searchEngine.commitAndClose();
     }

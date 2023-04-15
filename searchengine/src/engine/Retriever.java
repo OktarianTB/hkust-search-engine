@@ -53,6 +53,13 @@ class Retriever extends Storage {
         return postings;
     }
 
+    public Set<Integer> getDocumentWordIds(Integer docId) throws IOException {
+        Set<Integer> wordIds = new HashSet<Integer>();
+        wordIds.addAll(getTitleWordIds(docId));
+        wordIds.addAll(getBodyWordIds(docId));
+        return wordIds;
+    }
+
     public Set<Integer> getTitleWordIds(Integer docId) throws IOException {
         Set<Integer> wordIds = titleForwardIndexMap.get(docId);
         if (wordIds == null) {

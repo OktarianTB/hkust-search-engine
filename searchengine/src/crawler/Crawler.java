@@ -58,8 +58,6 @@ public class Crawler {
             Page page = getPage(url);
 
             if (page != null) {
-                System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle() + "\n");
-
                 Integer docId = indexer.getDocId(url);
 
                 Set<Integer> childDocIds = new HashSet<Integer>();
@@ -79,6 +77,7 @@ public class Crawler {
                 }
 
                 pagesCrawled += 1;
+                System.out.println(pagesCrawled + ": " + url + "\n" + page.getTitle() + "\n");
             }
         }
     }
