@@ -47,8 +47,8 @@ public class Result {
         }
         sb.append("\n");
 
-        for (String childLink : childLinks) {
-            sb.append(childLink + "\n");
+        for (int i = 0; i < 10 && i < childLinks.size(); i++) {
+            sb.append(childLinks.get(i) + "\n");
         }
 
         sb.append("\n");

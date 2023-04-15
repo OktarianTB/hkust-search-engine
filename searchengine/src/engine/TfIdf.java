@@ -6,10 +6,11 @@ public class TfIdf {
     }
 
     public static double calculateTermWeighting(int tf, int df, int N) {
-        return tf * log2(N / df);
+        double idf = log2((double) N / df);
+        return tf * idf;
     }
 
-    public static double log2(int x) {
+    public static double log2(double x) {
         return Math.log(x) / Math.log(2);
     }
 }

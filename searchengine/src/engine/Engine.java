@@ -130,15 +130,15 @@ class Engine {
     private int getDocumentFrequency(Map<Integer, Posting> titlePostings, Map<Integer, Posting> bodyPostings) {
         Set<Integer> uniqueDocIds = new HashSet<Integer>(titlePostings.keySet());
         uniqueDocIds.addAll(bodyPostings.keySet());
-        return uniqueDocIds.size();
+        return Math.max(uniqueDocIds.size(), 1);
     }
 
     public static void main(String[] args) throws Exception {
         Engine searchEngine = new Engine();
         List<Result> results = searchEngine.search("movie");
 
-        for (Result result : results) {
-            System.out.println(result);
+        for (int i = 0; i < 50 && i < results.size(); i++) {
+            System.out.println(results.get(i));
         }
 
         System.out.println("Number of results: " + results.size());
