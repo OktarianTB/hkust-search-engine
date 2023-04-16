@@ -19,8 +19,11 @@ class Engine {
     private Tokenizer tokenizer;
 
     public Engine() throws IOException {
+        long startTime = System.currentTimeMillis();
         tokenizer = new Tokenizer();
         retriever = new Retriever(Constants.STORAGE_NAME);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Init Runtime: " + (endTime - startTime) + "ms");
     }
 
     public void commitAndClose() throws IOException {
@@ -28,7 +31,7 @@ class Engine {
     }
 
     public List<Result> search(String query) throws IOException {
-        List<String> queryWords = tokenizer.tokenize(query);
+        List<String> queryWords = tokenizer.tokenizeText(query);
         List<Integer> queryWordIds = retriever.getWordIds(queryWords);
 
         if (queryWordIds.isEmpty()) {
@@ -135,13 +138,17 @@ class Engine {
 
     public static void main(String[] args) throws Exception {
         Engine searchEngine = new Engine();
-        List<Result> results = searchEngine.search("movie");
+
+        long startTime = System.currentTimeMillis();
+        List<Result> results = searchEngine.search("funny");
+        long endTime = System.currentTimeMillis();
 
         for (int i = 0; i < 50 && i < results.size(); i++) {
             System.out.println(results.get(i));
         }
 
         System.out.println("Number of results: " + results.size());
+        System.out.println("Search Runtime: " + (endTime - startTime) + "ms");
 
         searchEngine.commitAndClose();
     }

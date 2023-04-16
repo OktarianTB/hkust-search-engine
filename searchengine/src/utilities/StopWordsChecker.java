@@ -6,24 +6,20 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 // this class is used to check if a word is a stop word
-public class StopWordsChecker
-{
+public class StopWordsChecker {
 	private HashSet<String> stopWords;
 
-	public StopWordsChecker()
-	{		
+	public StopWordsChecker() {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader("resources/stopwords.txt"));
 			stopWords = reader.lines().collect(Collectors.toCollection(HashSet::new));
 			reader.close();
-		} catch(Exception exception) {
+		} catch (Exception exception) {
 			System.err.println(exception.toString());
 		}
 	}
 
-    public boolean isStopWord(String str)
-	{
-		return stopWords.contains(str);	
+	public boolean isStopWord(String str) {
+		return stopWords.contains(str);
 	}
 }
-

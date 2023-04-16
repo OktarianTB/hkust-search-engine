@@ -69,8 +69,8 @@ public class Crawler {
                 }
 
                 if (indexer.docNeedsUpdating(docId, page.getLastModifiedAt())) {
-                    List<String> titleWords = tokenizer.tokenize(page.getTitle());
-                    List<String> bodyWords = tokenizer.tokenize(page.getText());
+                    List<String> titleWords = tokenizer.tokenizeText(page.getTitle());
+                    List<String> bodyWords = tokenizer.tokenizeText(page.getText());
 
                     indexer.updateDocument(docId, page, titleWords, bodyWords);
                     indexer.updateRelationships(docId, childDocIds);
