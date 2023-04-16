@@ -15,6 +15,7 @@ import storage.Properties;
 import storage.Relationship;
 import storage.Storage;
 import utilities.Result;
+import utilities.Token;
 
 // this class is responsible for retrieving documents from storage (read-only)
 class Retriever extends Storage {
@@ -23,18 +24,27 @@ class Retriever extends Storage {
         super(recordManagerName);
     }
 
-    // returns the list of word ids for the given list of words
-    public List<Integer> getWordIds(List<String> words) throws IOException {
-        List<Integer> wordIds = new ArrayList<Integer>();
+    // returns a map of word => word id for the given list of words
+    public List<SearchToken> getSearchTokens(List<Token> tokens) throws IOException {
+        List<SearchToken> searchTokens = new ArrayList<SearchToken>();
 
-        for (String word : words) {
-            Integer wordId = wordMap.get(word);
-            if (wordId != null) {
-                wordIds.add(wordId);
+        for (Token token : tokens) {
+            List<Integer> wordIds = new ArrayList<Integer>();
+            
+            for (String word : token.getWords()) {
+                Integer wordId = wordMap.get(word);
+                if (wordId != null) {
+                    wordIds.add(wordId);
+                    
+                }
+            }
+
+            if (!wordIds.isEmpty()) {
+                searchTokens.add(new SearchToken(wordIds));
             }
         }
 
-        return wordIds;
+        return searchTokens;
     }
 
     public Map<Integer, Posting> getTitlePostings(Integer wordId) throws IOException {
@@ -108,6 +118,7 @@ class Retriever extends Storage {
 
         List<Result> results = new ArrayList<Result>();
 
+        // todo: stop at 50 results
         for (Integer docId : rankedDocumentIds) {
             try {
                 String url = reverseDocumentMap.get(docId);

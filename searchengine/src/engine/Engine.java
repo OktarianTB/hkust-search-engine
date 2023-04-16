@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import storage.Posting;
 import utilities.Constants;
 import utilities.Result;
+import utilities.Token;
 import utilities.Tokenizer;
 
 class Engine {
@@ -27,23 +28,25 @@ class Engine {
     }
 
     public void commitAndClose() throws IOException {
-        retriever.commitAndClose();
+        retriever.commitAndClose(); // todo: refactor
     }
 
     public List<Result> search(String query) throws IOException {
-        List<String> queryWords = tokenizer.tokenizeText(query);
-        List<Integer> queryWordIds = retriever.getWordIds(queryWords);
+        List<Token> queryTokens = tokenizer.tokenizeQuery(query);
+        List<SearchToken> searchTokens = retriever.getSearchTokens(queryTokens);
 
-        if (queryWordIds.isEmpty()) {
+        if (searchTokens.isEmpty()) {
             return new ArrayList<>();
         }
 
         int vocabularySize = retriever.getNumberOfWords();
         int numberOfDocs = retriever.getNumberOfDocuments();
 
+        List<Integer> queryWordIds = searchTokens.stream().flatMap(token -> token.getWordIds().stream())
+                .collect(Collectors.toList());
         double[] queryVector = calculateQueryVector(queryWordIds, vocabularySize, numberOfDocs);
 
-        Set<Integer> relevantDocuments = getRelevantDocuments(queryWordIds);
+        Set<Integer> relevantDocuments = getRelevantDocuments(searchTokens);
 
         Map<Integer, double[]> documentVectors = getDocumentVectors(vocabularySize, numberOfDocs, relevantDocuments);
 
@@ -54,16 +57,83 @@ class Engine {
         return rankedResults;
     }
 
-    private Set<Integer> getRelevantDocuments(List<Integer> queryWordIds) throws IOException {
+    private Set<Integer> getRelevantDocuments(List<SearchToken> queryTokens)
+            throws IOException {
         Set<Integer> relevantDocuments = new HashSet<Integer>();
-        for (Integer wordId : queryWordIds) {
-            Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordId);
-            Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordId);
 
-            relevantDocuments.addAll(titlePostings.keySet());
-            relevantDocuments.addAll(bodyPostings.keySet());
+        for (SearchToken token : queryTokens) {
+            if (token.isPhrase()) {
+                List<Integer> wordIds = token.getWordIds();
+                relevantDocuments.addAll(getRelevantDocumentForPhraseInTitle(wordIds));
+                relevantDocuments.addAll(getRelevantDocumentForPhraseInBody(wordIds));
+            } else {
+                Integer wordId = token.getWordIds().get(0);
+                Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordId);
+                Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordId);
+
+                relevantDocuments.addAll(titlePostings.keySet());
+                relevantDocuments.addAll(bodyPostings.keySet());
+            }
         }
+
         return relevantDocuments;
+    }
+
+    private Set<Integer> getRelevantDocumentForPhraseInTitle(List<Integer> wordIds) throws IOException {
+        Map<Integer, Set<Integer>> documentPositionsMap = new HashMap<Integer, Set<Integer>>();
+
+        Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordIds.get(0));
+        documentPositionsMap = titlePostings.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getPositions()));
+
+        for (int i = 1; i < wordIds.size(); i++) {
+            Map<Integer, Posting> nextTitlePostings = retriever.getTitlePostings(wordIds.get(i));
+            documentPositionsMap = filterDocuments(documentPositionsMap, nextTitlePostings);
+        }
+
+        return documentPositionsMap.keySet();
+    }
+
+    private Set<Integer> getRelevantDocumentForPhraseInBody(List<Integer> wordIds) throws IOException {
+        Map<Integer, Set<Integer>> documentPositionsMap = new HashMap<Integer, Set<Integer>>();
+
+        Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordIds.get(0));
+        documentPositionsMap = bodyPostings.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getPositions()));
+
+        for (int i = 1; i < wordIds.size(); i++) {
+            Map<Integer, Posting> nextBodyPostings = retriever.getBodyPostings(wordIds.get(i));
+            documentPositionsMap = filterDocuments(documentPositionsMap, nextBodyPostings);
+        }
+
+        return documentPositionsMap.keySet();
+    }
+
+    public static Map<Integer, Set<Integer>> filterDocuments(Map<Integer, Set<Integer>> documentPositionsMap,
+            Map<Integer, Posting> nextPostings) {
+        Map<Integer, Set<Integer>> filteredDocumentPositionsMap = new HashMap<Integer, Set<Integer>>();
+
+        for (Map.Entry<Integer, Set<Integer>> entry : documentPositionsMap.entrySet()) {
+            Integer docId = entry.getKey();
+            Set<Integer> positions = entry.getValue();
+
+            if (nextPostings.containsKey(docId)) {
+                Set<Integer> nextPositions = nextPostings.get(docId).getPositions();
+                Set<Integer> filteredPositions = new HashSet<Integer>();
+
+                for (Integer position : positions) {
+                    if (nextPositions.contains(position + 1)) {
+                        filteredPositions.add(position + 1);
+                    }
+                }
+
+                if (!filteredPositions.isEmpty()) {
+                    filteredDocumentPositionsMap.put(docId, filteredPositions);
+                }
+            }
+        }
+
+        return filteredDocumentPositionsMap;
     }
 
     private Map<Integer, double[]> getDocumentVectors(int vocabularySize, int numberOfDocs,
@@ -140,7 +210,7 @@ class Engine {
         Engine searchEngine = new Engine();
 
         long startTime = System.currentTimeMillis();
-        List<Result> results = searchEngine.search("funny");
+        List<Result> results = searchEngine.search("\"hong kong\"");
         long endTime = System.currentTimeMillis();
 
         for (int i = 0; i < 50 && i < results.size(); i++) {
