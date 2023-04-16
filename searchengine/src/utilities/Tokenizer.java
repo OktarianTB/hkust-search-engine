@@ -97,14 +97,4 @@ public class Tokenizer {
 
         return tokens;
     }
-
-    /*
-     * public static void main(String[] args) throws Exception {
-     * Tokenizer tokenizer = new Tokenizer();
-     * List<Token> words = tokenizer.
-     * tokenizeQuery("The quick \"brown fox\" jumps \"over\" \"hong\" the \"lazy dog.\""
-     * );
-     * System.out.println(words);
-     * }
-     */
 }

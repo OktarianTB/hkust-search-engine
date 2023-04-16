@@ -15,23 +15,22 @@ import utilities.Result;
 import utilities.Token;
 import utilities.Tokenizer;
 
-class Engine {
+public class Engine {
     private Retriever retriever;
     private Tokenizer tokenizer;
 
     public Engine() throws IOException {
-        long startTime = System.currentTimeMillis();
         tokenizer = new Tokenizer();
         retriever = new Retriever(Constants.STORAGE_NAME);
-        long endTime = System.currentTimeMillis();
-        System.out.println("Init Runtime: " + (endTime - startTime) + "ms");
     }
 
     public void commitAndClose() throws IOException {
-        retriever.commitAndClose(); // todo: refactor
+        retriever.commitAndClose();
     }
 
     public List<Result> search(String query) throws IOException {
+        System.out.println("Searching for: " + query);
+
         List<Token> queryTokens = tokenizer.tokenizeQuery(query);
         List<SearchToken> searchTokens = retriever.getSearchTokens(queryTokens);
 

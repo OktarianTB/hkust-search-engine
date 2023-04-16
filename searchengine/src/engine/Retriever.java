@@ -30,7 +30,7 @@ class Retriever extends Storage {
 
         for (Token token : tokens) {
             List<Integer> wordIds = new ArrayList<Integer>();
-            
+
             for (String word : token.getWords()) {
                 Integer wordId = wordMap.get(word);
                 if (wordId != null) {
@@ -133,6 +133,13 @@ class Retriever extends Storage {
                     childLinks.add(childLink);
                 }
 
+                // do the same for parent links
+                List<String> parentLinks = new ArrayList<String>();
+                for (Integer parentDocId : relationship.getParentDocIds()) {
+                    String parentLink = reverseDocumentMap.get(parentDocId);
+                    parentLinks.add(parentLink);
+                }
+
                 // combine the title and body word ids into one set of words and their
                 // frequencies
                 Map<String, Integer> wordFrequencyMap = new HashMap<String, Integer>();
@@ -168,8 +175,7 @@ class Retriever extends Storage {
                 double score = documentSimilarities.get(docId);
 
                 // add result to output list
-                // todo: output also needs parent links
-                Result result = new Result(score, url, properties, wordFrequencyMap, childLinks);
+                Result result = new Result(score, url, properties, wordFrequencyMap, parentLinks, childLinks);
                 results.add(result);
             } catch (IOException ignore) {
                 System.out.println("Error getting results for doc id: " + docId);

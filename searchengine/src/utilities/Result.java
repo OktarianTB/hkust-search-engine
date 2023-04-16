@@ -1,9 +1,14 @@
 package utilities;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import storage.Properties;
 
@@ -13,14 +18,34 @@ public class Result {
     private String url;
     private Properties properties;
     private Map<String, Integer> wordFrequencyMap;
+    private List<String> parentLinks;
     private List<String> childLinks;
 
-    public Result(double score, String url, Properties properties, Map<String, Integer> wordFrequencyMap, List<String> childLinks) {
+    public Result(double score, String url, Properties properties, Map<String, Integer> wordFrequencyMap,
+            List<String> parentLinks, List<String> childLinks) {
         this.score = score;
         this.properties = properties;
         this.url = url;
         this.wordFrequencyMap = wordFrequencyMap;
+        this.parentLinks = parentLinks;
         this.childLinks = childLinks;
+    }
+
+    public JsonObject toJson() {
+        Map<String, Integer> sortedMap = wordFrequencyMap.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+        Gson gson = new Gson();
+        JsonObject result = new JsonObject();
+        result.addProperty("score", score);
+        result.addProperty("url", url);
+        result.add("properties", gson.toJsonTree(properties));
+        result.add("wordFrequencyMap", gson.toJsonTree(sortedMap));
+        result.add("parentLinks", gson.toJsonTree(parentLinks));
+        result.add("childLinks", gson.toJsonTree(childLinks));
+        return result;
     }
 
     @Override
@@ -47,7 +72,13 @@ public class Result {
         }
         sb.append("\n");
 
-        for (int i = 0; i < 10 && i < childLinks.size(); i++) {
+        sb.append("Parent Links:\n");
+        for (int i = 0; i < 5 && i < parentLinks.size(); i++) {
+            sb.append(parentLinks.get(i) + "\n");
+        }
+
+        sb.append("Child Links:\n");
+        for (int i = 0; i < 5 && i < childLinks.size(); i++) {
             sb.append(childLinks.get(i) + "\n");
         }
 
