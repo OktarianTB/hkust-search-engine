@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Button, Container, InputAdornment, Paper, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
-interface Props {
+interface SearchBarProps {
     onSearch: (query: string) => void;
+    isLoading: boolean;
 }
 
-const SearchBar = ({ onSearch }: Props) => {
+const SearchBar = ({ onSearch, isLoading }: SearchBarProps) => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const handleChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
@@ -39,6 +40,7 @@ const SearchBar = ({ onSearch }: Props) => {
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     sx={{ width: 1000 }}
+                    disabled={isLoading}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
@@ -51,6 +53,7 @@ const SearchBar = ({ onSearch }: Props) => {
                     variant="outlined"
                     style={{ height: 56, marginLeft: 20 }}
                     onClick={handleClick}
+                    disabled={isLoading}
                 >
                     Search
                 </Button>

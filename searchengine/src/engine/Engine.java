@@ -204,7 +204,7 @@ public class Engine {
         uniqueDocIds.addAll(bodyPostings.keySet());
         return Math.max(uniqueDocIds.size(), 1);
     }
-
+    
     public static void main(String[] args) throws Exception {
         Engine searchEngine = new Engine();
 

@@ -78,6 +78,11 @@ class SearchHandler implements HttpHandler {
             exchange.sendResponseHeaders(200, -1);
             return;
         } else {
+            Headers headers = exchange.getResponseHeaders();
+            headers.add("Access-Control-Allow-Origin", "http://localhost:3000");
+            headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            headers.add("Access-Control-Allow-Headers", "Content-Type");
+
             exchange.sendResponseHeaders(405, -1);
         }
 

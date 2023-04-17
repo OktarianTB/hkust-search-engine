@@ -9,7 +9,7 @@ import {
     Typography,
 } from '@material-ui/core';
 import { Container, Link } from '@mui/material';
-import { Result } from '../types/Result';
+import { SearchResult } from '../types/ResultType';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -18,6 +18,10 @@ const useStyles = makeStyles((theme: Theme) =>
             color: theme.palette.common.white,
             padding: theme.spacing(1),
             borderRadius: theme.shape.borderRadius,
+        },
+        header: {
+            display: 'flex',
+            flexDirection: 'column',
         },
         properties: {
             marginBottom: theme.spacing(1),
@@ -40,16 +44,12 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-const CustomCard = ({
-    title,
-    score,
-    url,
-    size,
-    lastModified,
-    topWordFrequencies,
-    parentLinks,
-    childLinks,
-}: Result) => {
+interface ResultCardProps {
+    searchResult: SearchResult;
+}
+
+const ResultCard = ({ searchResult }: ResultCardProps) => {
+    const { score, url, properties, wordFrequencyMap, parentLinks, childLinks } = searchResult;
     const classes = useStyles();
 
     return (
@@ -58,29 +58,33 @@ const CustomCard = ({
                 <CardHeader
                     avatar={
                         <Typography variant="body1" className={classes.score}>
-                            {score}
+                            {score.toFixed(3)}
                         </Typography>
                     }
                     title={
-                        <div>
-                            <Typography variant="h6">{title}</Typography>
+                        <div className={classes.header}>
+                            <Link target="_blank" href={url} variant="h6" underline="none">{properties.title}</Link>
                             <Link target="_blank" href={url} variant="caption">{url}</Link>
                         </div>
                     }
                 />
                 <CardContent>
                     <div className={classes.properties}>
-                        <Typography variant="subtitle2">Page size: {size}</Typography>
-                        <Typography variant="subtitle2">Last modified: {lastModified}</Typography>
+                        <Typography variant="subtitle2">Page size: {properties.size}</Typography>
+                        <Typography variant="subtitle2">Last modified: {properties.lastModifiedAt}</Typography>
                     </div>
                     <div className={classes.frequencies}>
                         <Typography variant="subtitle2">Top word frequencies:</Typography>
                         <div>
-                            {topWordFrequencies.map((wordFrequency) => (
-                                <Typography key={wordFrequency.word} variant="caption" className={classes.frequency}>
-                                    {wordFrequency.word}: {wordFrequency.frequency};
-                                </Typography>
-                            ))}
+                            {
+                                Object.entries(wordFrequencyMap).map(
+                                    ([word, frequency]) => (
+                                        <Typography key={word} variant="caption" className={classes.frequency}>
+                                            {word}: {frequency};
+                                        </Typography>
+                                    )
+                                )
+                            }
                         </div>
                     </div>
                     <div className={classes.linkContainer}>
@@ -101,4 +105,4 @@ const CustomCard = ({
     );
 };
 
-export default CustomCard;
+export default ResultCard;
