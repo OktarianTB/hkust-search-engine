@@ -16,8 +16,8 @@ import utilities.Token;
 import utilities.Tokenizer;
 
 public class Engine {
-    private Retriever retriever;
     private Tokenizer tokenizer;
+    private Retriever retriever;
 
     public Engine() throws IOException {
         tokenizer = new Tokenizer();
@@ -78,7 +78,7 @@ public class Engine {
         return relevantDocuments;
     }
 
-    private Set<Integer> getRelevantDocumentForPhraseInTitle(List<Integer> wordIds) throws IOException {
+    public Set<Integer> getRelevantDocumentForPhraseInTitle(List<Integer> wordIds) throws IOException {
         Map<Integer, Set<Integer>> documentPositionsMap = new HashMap<Integer, Set<Integer>>();
 
         Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordIds.get(0));
@@ -93,7 +93,7 @@ public class Engine {
         return documentPositionsMap.keySet();
     }
 
-    private Set<Integer> getRelevantDocumentForPhraseInBody(List<Integer> wordIds) throws IOException {
+    public Set<Integer> getRelevantDocumentForPhraseInBody(List<Integer> wordIds) throws IOException {
         Map<Integer, Set<Integer>> documentPositionsMap = new HashMap<Integer, Set<Integer>>();
 
         Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordIds.get(0));
@@ -180,7 +180,7 @@ public class Engine {
         return documentVector;
     }
 
-    private double[] calculateQueryVector(List<Integer> queryWordsIds, int vocabularySize, int N) throws IOException {
+    public double[] calculateQueryVector(List<Integer> queryWordsIds, int vocabularySize, int N) throws IOException {
         double[] queryVector = new double[vocabularySize];
 
         Map<Integer, Long> wordFrequencies = queryWordsIds.stream()
@@ -204,7 +204,7 @@ public class Engine {
         uniqueDocIds.addAll(bodyPostings.keySet());
         return Math.max(uniqueDocIds.size(), 1);
     }
-    
+
     public static void main(String[] args) throws Exception {
         Engine searchEngine = new Engine();
 

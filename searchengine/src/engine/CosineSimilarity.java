@@ -19,7 +19,7 @@ public class CosineSimilarity {
     }
 
     // calculate the cosine similarity between two vectors
-    private static double calculateCosineSimilarity(double[] vector1, double[] vector2) {
+    public static double calculateCosineSimilarity(double[] vector1, double[] vector2) {
         double dotProduct = 0.0;
         double normA = 0.0;
         double normB = 0.0;
