@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -208,17 +209,23 @@ public class Engine {
     public static void main(String[] args) throws Exception {
         Engine searchEngine = new Engine();
 
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter your query: ");
+        String query = scanner.nextLine();
+
         long startTime = System.currentTimeMillis();
-        List<Result> results = searchEngine.search("\"hong kong\"");
+        List<Result> results = searchEngine.search(query);
         long endTime = System.currentTimeMillis();
 
-        for (int i = 0; i < 50 && i < results.size(); i++) {
+        for (int i = 0; i < 10 && i < results.size(); i++) {
             System.out.println(results.get(i));
         }
 
+        System.out.println("Query: " + query);
         System.out.println("Number of results: " + results.size());
         System.out.println("Search Runtime: " + (endTime - startTime) + "ms");
 
+        scanner.close();
         searchEngine.commitAndClose();
     }
 }
