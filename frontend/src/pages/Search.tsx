@@ -23,15 +23,16 @@ const useStyles = makeStyles((theme: Theme) =>
 interface ResultsProps {
     query: string;
     searchResults: SearchResult[];
+    time: number;
 }
 
-const Results = ({ query, searchResults }: ResultsProps): ReactElement => {
+const Results = ({ query, searchResults, time }: ResultsProps): ReactElement => {
     const classes = useStyles();
 
     return (
         <div>
             <div className={classes.text}>
-                <Typography variant="caption">{searchResults.length === 50 ? "50+" : searchResults.length} results found for query '{query}'</Typography>
+                <Typography variant="caption">{searchResults.length === 50 ? "50+" : searchResults.length} results found for query '{query}' in {time}ms</Typography>
             </div>
             {searchResults.slice(0, 50).map((result: SearchResult) => <ResultCard key={result.url} searchResult={result} />)}
         </div>
@@ -54,16 +55,17 @@ const Search = (): ReactElement => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [query, setQuery] = useState<string>("");
-    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+    const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
+
 
     const handleSearch = async (query: string): Promise<void> => {
-        setSearchResults([]);
+        setSearchResults(null);
         setError(null);
         setIsLoading(true);
 
         try {
-            const searchResults: SearchResult[] = await search(query);
-            setSearchResults(Object.values(searchResults));
+            const data: SearchResults = await search(query);
+            setSearchResults(data);
         } catch (error) {
             setError(`Error while searching for query '${query}'`);
             console.error(error);
@@ -79,20 +81,20 @@ const Search = (): ReactElement => {
 
             {isLoading && <Spinner />}
 
-            {searchResults && searchResults.length === 0 && !isLoading && query && !error && (
+            {searchResults && searchResults.results.length === 0 && !isLoading && query && !error && (
                 <div className={classes.text}>
                     <Typography variant="caption">No results found for query '{query}'</Typography>
                 </div>
             )}
 
-            {searchResults && searchResults.length === 0 && !isLoading && error && (
+            {searchResults && searchResults.results.length === 0 && !isLoading && error && (
                 <div className={classes.text}>
                     <Typography variant="caption">{error}</Typography>
                 </div>
             )}
 
-            {searchResults && searchResults.length > 0 ? (
-                <Results query={query} searchResults={searchResults} />
+            {searchResults && searchResults.results.length > 0 ? (
+                <Results query={query} searchResults={searchResults.results} time={searchResults.time} />
             ) : <div></div>}
         </div>
     );

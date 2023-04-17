@@ -44,7 +44,9 @@ class SearchHandler implements HttpHandler {
             String query = queryElement.getAsString();
 
             // search the engine
+            long startTime = System.currentTimeMillis();
             List<Result> results = engine.search(query);
+            long endTime = System.currentTimeMillis();
 
             // convert the results to a list of JsonObjects
             List<JsonObject> resultsJson = results.stream().map(Result::toJson)
@@ -53,6 +55,7 @@ class SearchHandler implements HttpHandler {
             // create json response object
             JsonObject responseBodyJson = new JsonObject();
             responseBodyJson.add("results", gson.toJsonTree(resultsJson));
+            responseBodyJson.addProperty("time", Math.round(endTime - startTime));
 
             // set the response headers
             Headers headers = exchange.getResponseHeaders();

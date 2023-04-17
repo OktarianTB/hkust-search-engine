@@ -5,6 +5,7 @@ export interface WordFrequency {
 
 export interface SearchResults {
     results: SearchResult[];
+    time: number;
 }
 
 export interface SearchResult {
