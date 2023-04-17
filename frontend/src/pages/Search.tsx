@@ -31,7 +31,7 @@ const Results = ({ query, searchResults }: ResultsProps): ReactElement => {
     return (
         <div>
             <div className={classes.text}>
-                <Typography variant="caption">{searchResults.length} results found for query '{query}'</Typography>
+                <Typography variant="caption">{searchResults.length === 50 ? "50+" : searchResults.length} results found for query '{query}'</Typography>
             </div>
             {searchResults.slice(0, 50).map((result: SearchResult) => <ResultCard key={result.url} searchResult={result} />)}
         </div>

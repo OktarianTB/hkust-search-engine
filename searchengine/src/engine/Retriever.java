@@ -14,6 +14,7 @@ import storage.Posting;
 import storage.Properties;
 import storage.Relationship;
 import storage.Storage;
+import utilities.Constants;
 import utilities.Result;
 import utilities.Token;
 
@@ -113,12 +114,12 @@ class Retriever extends Storage {
     public List<Result> getRankedResults(Map<Integer, Double> documentSimilarities) throws IOException {
         List<Integer> rankedDocumentIds = documentSimilarities.entrySet().stream()
                 .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(Constants.NUMBER_OF_RESULTS)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
         List<Result> results = new ArrayList<Result>();
 
-        // todo: stop at 50 results
         for (Integer docId : rankedDocumentIds) {
             try {
                 String url = reverseDocumentMap.get(docId);
