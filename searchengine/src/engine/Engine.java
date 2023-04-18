@@ -67,7 +67,7 @@ public class Engine {
 
         Set<Integer> relevantDocuments = getRelevantDocuments(searchTokens);
 
-        Map<Integer, double[]> documentVectors = getDocumentVectors(vocabularySize, numberOfDocs, relevantDocuments);
+        Map<Integer, double[]> documentVectors = getDocumentVectors(relevantDocuments, vocabularySize, numberOfDocs);
 
         Map<Integer, Double> documentSimilarities = CosineSimilarity.getDocumentSimilarities(queryVector,
                 documentVectors);
@@ -155,8 +155,8 @@ public class Engine {
         return filteredDocumentPositionsMap;
     }
 
-    private Map<Integer, double[]> getDocumentVectors(int vocabularySize, int numberOfDocs,
-            Set<Integer> relevantDocuments)
+    private Map<Integer, double[]> getDocumentVectors(Set<Integer> relevantDocuments, int vocabularySize,
+            int numberOfDocs)
             throws IOException {
         Map<Integer, double[]> documentVectors = new HashMap<Integer, double[]>();
         for (Integer docId : relevantDocuments) {
@@ -186,9 +186,12 @@ public class Engine {
             int df = getDocumentFrequency(titlePostings, bodyPostings);
             tfmax = Math.max(tfmax, tf_title + tf_body);
 
-            // todo: fix title weight
-            double tf_idf_title = TfIdf.calculateTermWeighting(tf_title, df, N) * Constants.TITLE_WEIGHT;
+            double tf_idf_title = TfIdf.calculateTermWeighting(tf_title, df, N);
             double tf_idf_body = TfIdf.calculateTermWeighting(tf_body, df, N);
+
+            if (wordId.equals(160)) {
+                tf_idf_title *= Constants.TITLE_WEIGHT;
+            }
 
             documentVector[wordId] = tf_idf_title + tf_idf_body;
         }
