@@ -67,7 +67,8 @@ public class Engine {
 
         Set<Integer> relevantDocuments = getRelevantDocuments(searchTokens);
 
-        Map<Integer, double[]> documentVectors = getDocumentVectors(relevantDocuments, vocabularySize, numberOfDocs);
+        Set<Integer> queryWordIdSet = new HashSet<Integer>(queryWordIds);
+        Map<Integer, double[]> documentVectors = getDocumentVectors(relevantDocuments, queryWordIdSet, vocabularySize, numberOfDocs);
 
         Map<Integer, Double> documentSimilarities = CosineSimilarity.getDocumentSimilarities(queryVector,
                 documentVectors);
@@ -155,18 +156,18 @@ public class Engine {
         return filteredDocumentPositionsMap;
     }
 
-    private Map<Integer, double[]> getDocumentVectors(Set<Integer> relevantDocuments, int vocabularySize,
+    private Map<Integer, double[]> getDocumentVectors(Set<Integer> relevantDocuments, Set<Integer> queryWordIds, int vocabularySize,
             int numberOfDocs)
             throws IOException {
         Map<Integer, double[]> documentVectors = new HashMap<Integer, double[]>();
         for (Integer docId : relevantDocuments) {
-            double[] documentVector = calculateDocumentVector(docId, vocabularySize, numberOfDocs);
+            double[] documentVector = calculateDocumentVector(docId, queryWordIds, vocabularySize, numberOfDocs);
             documentVectors.put(docId, documentVector);
         }
         return documentVectors;
     }
 
-    private double[] calculateDocumentVector(Integer docId, int vocabularySize, int N) throws IOException {
+    private double[] calculateDocumentVector(Integer docId, Set<Integer> queryWordIds, int vocabularySize, int N) throws IOException {
         double[] documentVector = new double[vocabularySize];
 
         Set<Integer> wordIds = retriever.getDocumentWordIds(docId);
@@ -189,7 +190,7 @@ public class Engine {
             double tf_idf_title = TfIdf.calculateTermWeighting(tf_title, df, N);
             double tf_idf_body = TfIdf.calculateTermWeighting(tf_body, df, N);
 
-            if (wordId.equals(160)) {
+            if (queryWordIds.contains(wordId)) {
                 tf_idf_title *= Constants.TITLE_WEIGHT;
             }
 
