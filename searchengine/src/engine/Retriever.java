@@ -19,9 +19,14 @@ import utilities.Token;
 
 // this class is responsible for retrieving documents from storage (read-only)
 class Retriever extends Storage {
+    private Map<Integer, Map<Integer, Posting>> titleCache;
+    private Map<Integer, Map<Integer, Posting>> bodyCache;
 
     public Retriever(String recordManagerName) throws IOException {
         super(recordManagerName);
+
+        titleCache = new HashMap<Integer, Map<Integer, Posting>>();
+        bodyCache = new HashMap<Integer, Map<Integer, Posting>>();
     }
 
     // returns a map of word => word id for the given list of words
@@ -48,18 +53,32 @@ class Retriever extends Storage {
     }
 
     public Map<Integer, Posting> getTitlePostings(Integer wordId) throws IOException {
+        if (titleCache.containsKey(wordId)) {
+            return titleCache.get(wordId);
+        }
+
         Map<Integer, Posting> postings = titleInvertedIndexMap.get(wordId);
         if (postings == null) {
+            titleCache.put(wordId, new HashMap<>());
             return new HashMap<>();
         }
+
+        titleCache.put(wordId, postings);
         return postings;
     }
 
     public Map<Integer, Posting> getBodyPostings(Integer wordId) throws IOException {
+        if (bodyCache.containsKey(wordId)) {
+            return bodyCache.get(wordId);
+        }
+
         Map<Integer, Posting> postings = bodyInvertedIndexMap.get(wordId);
         if (postings == null) {
+            bodyCache.put(wordId, new HashMap<>());
             return new HashMap<>();
         }
+
+        bodyCache.put(wordId, postings);
         return postings;
     }
 
