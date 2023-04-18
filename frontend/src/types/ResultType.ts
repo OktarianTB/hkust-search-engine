@@ -9,6 +9,7 @@ export interface SearchResults {
 }
 
 export interface SearchResult {
+    docId: number;
     score: number;
     url: string;
     properties: {

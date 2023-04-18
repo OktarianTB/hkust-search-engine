@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import SimilarDocuments from "./pages/SimilarDocuments";
 
 function App() {
   const theme = createTheme({
@@ -32,6 +33,7 @@ function App() {
       <Box>
         <Router>
           <Routes>
+            <Route path="/similar-documents/:docId" element={<SimilarDocuments />} />
             <Route path="/" element={<Search />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

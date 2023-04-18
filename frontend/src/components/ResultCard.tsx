@@ -49,7 +49,7 @@ interface ResultCardProps {
 }
 
 const ResultCard = ({ searchResult }: ResultCardProps) => {
-    const { score, url, properties, wordFrequencyMap, parentLinks, childLinks } = searchResult;
+    const { docId, score, url, properties, wordFrequencyMap, parentLinks, childLinks } = searchResult;
     const classes = useStyles();
 
     return (
@@ -98,6 +98,9 @@ const ResultCard = ({ searchResult }: ResultCardProps) => {
                         <div className={classes.links}>
                             {childLinks.map((link) => <Typography key={link} variant="caption">- {link}</Typography>)}
                         </div>
+                    </div>
+                    <div>
+                        <Link href={`/similar-documents/${docId}`} variant="caption">Search for similar documents</Link>
                     </div>
                 </CardContent>
             </Card>
