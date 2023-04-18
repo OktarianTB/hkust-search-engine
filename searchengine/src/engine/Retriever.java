@@ -167,7 +167,7 @@ class Retriever extends Storage {
                 for (Integer wordId : titleWordIds) {
                     String word = reverseWordMap.get(wordId);
 
-                    Map<Integer, Posting> titlePostings = titleInvertedIndexMap.get(wordId);
+                    Map<Integer, Posting> titlePostings = titleCache.get(wordId);
                     if (titlePostings != null) {
                         Posting titlePosting = titlePostings.get(docId);
                         if (titlePosting != null) {
@@ -181,7 +181,7 @@ class Retriever extends Storage {
                 for (Integer wordId : bodyWordIds) {
                     String word = reverseWordMap.get(wordId);
 
-                    Map<Integer, Posting> bodyPostings = bodyInvertedIndexMap.get(wordId);
+                    Map<Integer, Posting> bodyPostings = bodyCache.get(wordId);
                     if (bodyPostings != null) {
                         Posting bodyPosting = bodyPostings.get(docId);
                         if (bodyPosting != null) {
