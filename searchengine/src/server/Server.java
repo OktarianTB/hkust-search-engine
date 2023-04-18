@@ -15,6 +15,7 @@ public class Server {
         server.setExecutor(threadPoolExecutor);
 
         server.createContext("/search", new SearchHandler());
+        server.createContext("/similar-documents", new SimilarDocumentsHandler());
         server.start();
 
         System.out.println("Server started on port " + port);

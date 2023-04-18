@@ -14,6 +14,7 @@ import storage.Properties;
 
 // Result class stores the information of a page needed in the test program
 public class Result {
+    private int docId;
     private double score;
     private String url;
     private Properties properties;
@@ -21,8 +22,9 @@ public class Result {
     private List<String> parentLinks;
     private List<String> childLinks;
 
-    public Result(double score, String url, Properties properties, Map<String, Integer> wordFrequencyMap,
+    public Result(int docId, double score, String url, Properties properties, Map<String, Integer> wordFrequencyMap,
             List<String> parentLinks, List<String> childLinks) {
+        this.docId = docId;
         this.score = score;
         this.properties = properties;
         this.url = url;
@@ -39,6 +41,7 @@ public class Result {
 
         Gson gson = new Gson();
         JsonObject result = new JsonObject();
+        result.addProperty("docId", docId);
         result.addProperty("score", score);
         result.addProperty("url", url);
         result.add("properties", gson.toJsonTree(properties));
@@ -52,7 +55,7 @@ public class Result {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("[" + String.format("%.3f", score) + "]: " + properties.getTitle() + "\n");
+        sb.append(docId + " - [" + String.format("%.3f", score) + "]: " + properties.getTitle() + "\n");
         sb.append(url + "\n");
         sb.append(properties.getLastModifiedAt() + ", " + properties.getSize() + "\n");
 

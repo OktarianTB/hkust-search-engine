@@ -14,7 +14,6 @@ import storage.Posting;
 import storage.Properties;
 import storage.Relationship;
 import storage.Storage;
-import utilities.Constants;
 import utilities.Result;
 import utilities.Token;
 
@@ -111,10 +110,10 @@ class Retriever extends Storage {
         return count;
     }
 
-    public List<Result> getRankedResults(Map<Integer, Double> documentSimilarities) throws IOException {
+    public List<Result> getRankedResults(Map<Integer, Double> documentSimilarities, int numberOfResults) throws IOException {
         List<Integer> rankedDocumentIds = documentSimilarities.entrySet().stream()
                 .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
-                .limit(Constants.NUMBER_OF_RESULTS)
+                .limit(numberOfResults)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
@@ -176,7 +175,7 @@ class Retriever extends Storage {
                 double score = documentSimilarities.get(docId);
 
                 // add result to output list
-                Result result = new Result(score, url, properties, wordFrequencyMap, parentLinks, childLinks);
+                Result result = new Result(docId, score, url, properties, wordFrequencyMap, parentLinks, childLinks);
                 results.add(result);
             } catch (IOException ignore) {
                 System.out.println("Error getting results for doc id: " + docId);

@@ -17,10 +17,10 @@ import com.sun.net.httpserver.HttpHandler;
 import engine.Engine;
 import utilities.Result;
 
-class SearchHandler implements HttpHandler {
+class SimilarDocumentsHandler implements HttpHandler {
     Gson gson;
 
-    SearchHandler() throws IOException {
+    SimilarDocumentsHandler() throws IOException {
         gson = new Gson();
     }
 
@@ -36,16 +36,17 @@ class SearchHandler implements HttpHandler {
             JsonObject jsonObject = gson.fromJson(new InputStreamReader(requestBody), JsonObject.class);
 
             // get the "query" property from the JsonObject
-            JsonElement queryElement = jsonObject.get("query");
-            if (queryElement == null) {
+            JsonElement docIdElement = jsonObject.get("docId");
+            if (docIdElement == null) {
                 exchange.sendResponseHeaders(400, -1);
                 return;
             }
-            String query = queryElement.getAsString();
+
+            Integer docId = docIdElement.getAsInt();
 
             // search the engine
             long startTime = System.currentTimeMillis();
-            List<Result> results = engine.query(query);
+            List<Result> results = engine.getSimilarDocuments(docId);
             long endTime = System.currentTimeMillis();
 
             // convert the results to a list of JsonObjects

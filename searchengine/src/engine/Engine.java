@@ -29,7 +29,7 @@ public class Engine {
         retriever.commitAndClose();
     }
 
-    public List<Result> search(String query) throws IOException {
+    public List<Result> query(String query) throws IOException {
         System.out.println("Searching for: " + query);
 
         List<Token> queryTokens = tokenizer.tokenizeQuery(query);
@@ -39,6 +39,25 @@ public class Engine {
             return new ArrayList<>();
         }
 
+        return search(searchTokens, Constants.NUMBER_OF_QUERY_RESULTS);
+    }
+
+    public List<Result> getSimilarDocuments(Integer docId) throws IOException {
+        System.out.println("Getting similar documents for doc: " + docId);
+
+        Set<Integer> docWordIds = retriever.getDocumentWordIds(docId);
+
+        if (docWordIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<SearchToken> searchTokens = docWordIds.stream().map(wordId -> new SearchToken(List.of(wordId)))
+                .collect(Collectors.toList());
+
+        return search(searchTokens, Constants.NUMBER_OF_RELEVANT_DOCS_RESULTS);
+    }
+
+    public List<Result> search(List<SearchToken> searchTokens, int numberOfResults) throws IOException {
         int vocabularySize = retriever.getNumberOfWords();
         int numberOfDocs = retriever.getNumberOfDocuments();
 
@@ -52,7 +71,7 @@ public class Engine {
 
         Map<Integer, Double> documentSimilarities = CosineSimilarity.getDocumentSimilarities(queryVector,
                 documentVectors);
-        List<Result> rankedResults = retriever.getRankedResults(documentSimilarities);
+        List<Result> rankedResults = retriever.getRankedResults(documentSimilarities, numberOfResults);
 
         return rankedResults;
     }
@@ -214,7 +233,7 @@ public class Engine {
         String query = scanner.nextLine();
 
         long startTime = System.currentTimeMillis();
-        List<Result> results = searchEngine.search(query);
+        List<Result> results = searchEngine.query(query);
         long endTime = System.currentTimeMillis();
 
         for (int i = 0; i < 10 && i < results.size(); i++) {
