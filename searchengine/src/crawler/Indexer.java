@@ -99,11 +99,9 @@ public class Indexer extends Storage {
         bodyForwardIndexMap.put(docId, uniqueBodyWordIds);
 
         // update title inverted index
-        int maxTitleFrequency = 0;
         for (Integer wordId : uniqueTitleWordIds) {
             Set<Integer> wordPositions = titleWordPositions.get(wordId);
             Posting newPosting = new Posting(wordPositions.size(), wordPositions);
-            maxTitleFrequency = Math.max(maxTitleFrequency, newPosting.getFrequency());
 
             Map<Integer, Posting> currentDocIdToPostingsMap = titleInvertedIndexMap.get(wordId);
             if (currentDocIdToPostingsMap != null) {
@@ -117,11 +115,9 @@ public class Indexer extends Storage {
         }
 
         // update body inverted index
-        int maxBodyFrequency = 0;
         for (Integer wordId : uniqueBodyWordIds) {
             Set<Integer> wordPositions = bodyWordPositions.get(wordId);
             Posting newPosting = new Posting(wordPositions.size(), wordPositions);
-            maxBodyFrequency = Math.max(maxBodyFrequency, newPosting.getFrequency());
 
             Map<Integer, Posting> currentDocIdToPostingsMap = bodyInvertedIndexMap.get(wordId);
             if (currentDocIdToPostingsMap != null) {
@@ -135,8 +131,7 @@ public class Indexer extends Storage {
         }
 
         // update properties map
-        Properties properties = new Properties(page.getTitle(), page.getSize(), page.getLastModifiedAt(),
-                maxTitleFrequency, maxBodyFrequency);
+        Properties properties = new Properties(page.getTitle(), page.getSize(), page.getLastModifiedAt());
         propertiesMap.put(docId, properties);
     }
 
