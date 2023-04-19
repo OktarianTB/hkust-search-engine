@@ -1,10 +1,12 @@
 package engine;
 
 public class TfIdf {
+    // normalize tf by tfmax
     public static double normalizeTermWeighting(double termWeighting, int tfmax) {
         return termWeighting / tfmax;
     }
 
+    // calculate tf-idf
     public static double calculateTermWeighting(int tf, int df, int N) {
         double idf = log2((double) N / df);
         return tf * idf;

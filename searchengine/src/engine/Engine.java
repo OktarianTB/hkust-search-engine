@@ -16,6 +16,7 @@ import utilities.Result;
 import utilities.Token;
 import utilities.Tokenizer;
 
+// this class is responsible for the search engine logic
 public class Engine {
     private Tokenizer tokenizer;
     private Retriever retriever;
@@ -25,16 +26,19 @@ public class Engine {
         retriever = new Retriever(Constants.STORAGE_NAME);
     }
 
+    // close the database
     public void commitAndClose() throws IOException {
         retriever.commitAndClose();
     }
 
+    // tokenize the query and search for the given query
     public List<Result> query(String query) throws IOException {
         System.out.println("Searching for: " + query);
 
         List<Token> queryTokens = tokenizer.tokenizeQuery(query);
         List<SearchToken> searchTokens = retriever.getSearchTokens(queryTokens);
 
+        // no query words match words in the database
         if (searchTokens.isEmpty()) {
             return new ArrayList<>();
         }
@@ -42,11 +46,15 @@ public class Engine {
         return search(searchTokens, Constants.NUMBER_OF_QUERY_RESULTS);
     }
 
+    // get similar documents to the given document
+    // this is done by getting the words in the document and uses them as the query
+    // in a normal search
     public List<Result> getSimilarDocuments(Integer docId) throws IOException {
         System.out.println("Getting similar documents for doc: " + docId);
 
         Set<Integer> docWordIds = retriever.getDocumentWordIds(docId);
 
+        // no such document in the database
         if (docWordIds.isEmpty()) {
             return new ArrayList<>();
         }
@@ -57,36 +65,49 @@ public class Engine {
         return search(searchTokens, Constants.NUMBER_OF_RELEVANT_DOCS_RESULTS);
     }
 
+    // search for the given query
     public List<Result> search(List<SearchToken> searchTokens, int numberOfResults) throws IOException {
         int vocabularySize = retriever.getNumberOfWords();
         int numberOfDocs = retriever.getNumberOfDocuments();
 
+        // calculate the query vector
         List<Integer> queryWordIds = searchTokens.stream().flatMap(token -> token.getWordIds().stream())
                 .collect(Collectors.toList());
         double[] queryVector = calculateQueryVector(queryWordIds, vocabularySize, numberOfDocs);
 
+        // find relevant documents
         Set<Integer> relevantDocuments = getRelevantDocuments(searchTokens);
 
+        // calculate the document vectors
         Set<Integer> queryWordIdSet = new HashSet<Integer>(queryWordIds);
-        Map<Integer, double[]> documentVectors = getDocumentVectors(relevantDocuments, queryWordIdSet, vocabularySize, numberOfDocs);
+        Map<Integer, double[]> documentVectors = getDocumentVectors(relevantDocuments, queryWordIdSet, vocabularySize,
+                numberOfDocs);
 
+        // calculate the document similarities between each document vector and the
+        // query vector
         Map<Integer, Double> documentSimilarities = CosineSimilarity.getDocumentSimilarities(queryVector,
                 documentVectors);
+
+        // get the top results
         List<Result> rankedResults = retriever.getRankedResults(documentSimilarities, numberOfResults);
 
         return rankedResults;
     }
 
+    // find relevant documents
+    // a document is relevant if it contains at least one of the query words
     private Set<Integer> getRelevantDocuments(List<SearchToken> queryTokens)
             throws IOException {
         Set<Integer> relevantDocuments = new HashSet<Integer>();
 
         for (SearchToken token : queryTokens) {
             if (token.isPhrase()) {
+                // if the token is a phrase, only get documents that contain the phrase
                 List<Integer> wordIds = token.getWordIds();
                 relevantDocuments.addAll(getRelevantDocumentForPhraseInTitle(wordIds));
                 relevantDocuments.addAll(getRelevantDocumentForPhraseInBody(wordIds));
             } else {
+                // if the token is a single word, get documents that contain the word
                 Integer wordId = token.getWordIds().get(0);
                 Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordId);
                 Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordId);
@@ -99,6 +120,7 @@ public class Engine {
         return relevantDocuments;
     }
 
+    // find all documents that contain the phrase in the title
     public Set<Integer> getRelevantDocumentForPhraseInTitle(List<Integer> wordIds) throws IOException {
         Map<Integer, Set<Integer>> documentPositionsMap = new HashMap<Integer, Set<Integer>>();
 
@@ -114,6 +136,7 @@ public class Engine {
         return documentPositionsMap.keySet();
     }
 
+    // find all documents that contain the phrase in the body
     public Set<Integer> getRelevantDocumentForPhraseInBody(List<Integer> wordIds) throws IOException {
         Map<Integer, Set<Integer>> documentPositionsMap = new HashMap<Integer, Set<Integer>>();
 
@@ -129,6 +152,9 @@ public class Engine {
         return documentPositionsMap.keySet();
     }
 
+    // filter for documents that contain the phrase
+    // this is done by checking if the next word in the phrase is in the same
+    // document at the next position
     public static Map<Integer, Set<Integer>> filterDocuments(Map<Integer, Set<Integer>> documentPositionsMap,
             Map<Integer, Posting> nextPostings) {
         Map<Integer, Set<Integer>> filteredDocumentPositionsMap = new HashMap<Integer, Set<Integer>>();
@@ -156,7 +182,9 @@ public class Engine {
         return filteredDocumentPositionsMap;
     }
 
-    private Map<Integer, double[]> getDocumentVectors(Set<Integer> relevantDocuments, Set<Integer> queryWordIds, int vocabularySize,
+    // calculate the document vectors for the relevant documents
+    private Map<Integer, double[]> getDocumentVectors(Set<Integer> relevantDocuments, Set<Integer> queryWordIds,
+            int vocabularySize,
             int numberOfDocs)
             throws IOException {
         Map<Integer, double[]> documentVectors = new HashMap<Integer, double[]>();
@@ -167,7 +195,9 @@ public class Engine {
         return documentVectors;
     }
 
-    private double[] calculateDocumentVector(Integer docId, Set<Integer> queryWordIds, int vocabularySize, int N) throws IOException {
+    // calculate the document vector for a document
+    private double[] calculateDocumentVector(Integer docId, Set<Integer> queryWordIds, int vocabularySize, int N)
+            throws IOException {
         double[] documentVector = new double[vocabularySize];
 
         Set<Integer> wordIds = retriever.getDocumentWordIds(docId);
@@ -190,6 +220,9 @@ public class Engine {
             double tf_idf_title = TfIdf.calculateTermWeighting(tf_title, df, N);
             double tf_idf_body = TfIdf.calculateTermWeighting(tf_body, df, N);
 
+            // if the word is in the query, increase the importance of the word in the title
+            // this is done by multiplying the tf-idf value with a weight
+            // if the title does not contain the word, the tf_idf will remain zero
             if (queryWordIds.contains(wordId)) {
                 tf_idf_title *= Constants.TITLE_WEIGHT;
             }
@@ -197,6 +230,8 @@ public class Engine {
             documentVector[wordId] = tf_idf_title + tf_idf_body;
         }
 
+        // normalize the document vector by dividing each value by the maximum tf value
+        // in the document
         for (int i = 0; i < documentVector.length; i++) {
             documentVector[i] = TfIdf.normalizeTermWeighting(documentVector[i], tfmax);
         }
@@ -204,14 +239,17 @@ public class Engine {
         return documentVector;
     }
 
+    // calculate the query vector
     public double[] calculateQueryVector(List<Integer> queryWordsIds, int vocabularySize, int N) throws IOException {
         double[] queryVector = new double[vocabularySize];
 
+        // count the frequency of each word in the query
         Map<Integer, Long> wordFrequencies = queryWordsIds.stream()
                 .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
         int tfmax = wordFrequencies.values().stream().max(Long::compare).get().intValue();
 
+        // calculate the tf-idf value for each word in the query
         for (Integer wordId : wordFrequencies.keySet()) {
             int tf = wordFrequencies.get(wordId).intValue();
             int df = getDocumentFrequency(retriever.getTitlePostings(wordId), retriever.getBodyPostings(wordId));
@@ -223,6 +261,8 @@ public class Engine {
         return queryVector;
     }
 
+    // calculate the document frequency for a word by counting the number of
+    // documents that contain the word
     private int getDocumentFrequency(Map<Integer, Posting> titlePostings, Map<Integer, Posting> bodyPostings) {
         Set<Integer> uniqueDocIds = new HashSet<Integer>(titlePostings.keySet());
         uniqueDocIds.addAll(bodyPostings.keySet());

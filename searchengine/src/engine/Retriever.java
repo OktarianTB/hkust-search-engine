@@ -19,6 +19,7 @@ import utilities.Token;
 
 // this class is responsible for retrieving documents from storage (read-only)
 class Retriever extends Storage {
+    // caches for the inverted indices
     private Map<Integer, Map<Integer, Posting>> titleCache;
     private Map<Integer, Map<Integer, Posting>> bodyCache;
 
@@ -29,7 +30,9 @@ class Retriever extends Storage {
         bodyCache = new HashMap<Integer, Map<Integer, Posting>>();
     }
 
-    // returns a map of word => word id for the given list of words
+    // returns a list of search tokens from a list of tokens
+    // a search token is a list of word ids (one for a single word token, multiple
+    // for a phrase token)
     public List<SearchToken> getSearchTokens(List<Token> tokens) throws IOException {
         List<SearchToken> searchTokens = new ArrayList<SearchToken>();
 
@@ -40,7 +43,6 @@ class Retriever extends Storage {
                 Integer wordId = wordMap.get(word);
                 if (wordId != null) {
                     wordIds.add(wordId);
-                    
                 }
             }
 
@@ -52,6 +54,7 @@ class Retriever extends Storage {
         return searchTokens;
     }
 
+    // returns the document postings for a word in the title
     public Map<Integer, Posting> getTitlePostings(Integer wordId) throws IOException {
         if (titleCache.containsKey(wordId)) {
             return titleCache.get(wordId);
@@ -67,6 +70,7 @@ class Retriever extends Storage {
         return postings;
     }
 
+    // returns the document postings for a word in the body
     public Map<Integer, Posting> getBodyPostings(Integer wordId) throws IOException {
         if (bodyCache.containsKey(wordId)) {
             return bodyCache.get(wordId);
@@ -82,6 +86,7 @@ class Retriever extends Storage {
         return postings;
     }
 
+    // returns all word ids contained in a document
     public Set<Integer> getDocumentWordIds(Integer docId) throws IOException {
         Set<Integer> wordIds = new HashSet<Integer>();
         wordIds.addAll(getTitleWordIds(docId));
@@ -89,6 +94,7 @@ class Retriever extends Storage {
         return wordIds;
     }
 
+    // returns the word ids contained in the title of a document
     public Set<Integer> getTitleWordIds(Integer docId) throws IOException {
         Set<Integer> wordIds = titleForwardIndexMap.get(docId);
         if (wordIds == null) {
@@ -97,6 +103,7 @@ class Retriever extends Storage {
         return wordIds;
     }
 
+    // returns the word ids contained in the body of a document
     public Set<Integer> getBodyWordIds(Integer docId) throws IOException {
         Set<Integer> wordIds = bodyForwardIndexMap.get(docId);
         if (wordIds == null) {
@@ -129,7 +136,11 @@ class Retriever extends Storage {
         return count;
     }
 
-    public List<Result> getRankedResults(Map<Integer, Double> documentSimilarities, int numberOfResults) throws IOException {
+    // ranks the results based on the document similarities and returns the top
+    // results
+    public List<Result> getRankedResults(Map<Integer, Double> documentSimilarities, int numberOfResults)
+            throws IOException {
+        // sort the document ids by their similarity scores
         List<Integer> rankedDocumentIds = documentSimilarities.entrySet().stream()
                 .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
                 .limit(numberOfResults)
@@ -138,6 +149,7 @@ class Retriever extends Storage {
 
         List<Result> results = new ArrayList<Result>();
 
+        // for every top document id, construct a result object
         for (Integer docId : rankedDocumentIds) {
             try {
                 String url = reverseDocumentMap.get(docId);
