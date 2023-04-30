@@ -24,6 +24,9 @@ const useStyles = makeStyles((theme: Theme) =>
             display: 'flex',
             flexDirection: 'column',
         },
+        title: {
+            display: 'flex',
+        },
         properties: {
             marginBottom: theme.spacing(1),
             display: 'flex',
@@ -47,9 +50,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface ResultCardProps {
     searchResult: SearchResult;
+    index: number;
 }
 
-const ResultCard = ({ searchResult }: ResultCardProps) => {
+const ResultCard = ({ searchResult, index }: ResultCardProps) => {
     const { docId, score, url, properties, wordFrequencyMap, parentLinks, childLinks } = searchResult;
     const classes = useStyles();
 
@@ -64,7 +68,10 @@ const ResultCard = ({ searchResult }: ResultCardProps) => {
                     }
                     title={
                         <div className={classes.header}>
-                            <Link target="_blank" href={url} variant="h6" underline="none">{properties.title}</Link>
+                            <div className={classes.title}>
+                                <Typography variant="h6">#{index + 1} -&nbsp;</Typography>
+                                <Link target="_blank" href={url} variant="h6" underline="none">{properties.title}</Link>
+                            </div>
                             <Link target="_blank" href={url} variant="caption">{url}</Link>
                         </div>
                     }

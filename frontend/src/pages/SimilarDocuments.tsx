@@ -41,7 +41,7 @@ const Results = ({ docId, searchResults, time }: ResultsProps): ReactElement => 
             <div className={classes.text}>
                 <Typography variant="caption">Top {searchResults.length} results similar to document '{docId}' found in {time}ms</Typography>
             </div>
-            {searchResults.map((result: SearchResult) => <ResultCard key={result.url} searchResult={result} />)}
+            {searchResults.map((result: SearchResult, index: number) => <ResultCard key={result.url} searchResult={result} index={index} />)}
         </div>
     );
 }

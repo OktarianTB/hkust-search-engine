@@ -34,7 +34,7 @@ const Results = ({ query, searchResults, time }: ResultsProps): ReactElement => 
             <div className={classes.text}>
                 <Typography variant="caption">{searchResults.length === 50 ? "50+" : searchResults.length} results found for query '{query}' in {time}ms</Typography>
             </div>
-            {searchResults.slice(0, 50).map((result: SearchResult) => <ResultCard key={result.url} searchResult={result} />)}
+            {searchResults.slice(0, 50).map((result: SearchResult, index: number) => <ResultCard key={result.url} searchResult={result} index={index} />)}
         </div>
     );
 }
