@@ -43,14 +43,14 @@ public class Engine {
             return new ArrayList<>();
         }
 
-        return search(searchTokens, Constants.NUMBER_OF_QUERY_RESULTS);
+        return search(searchTokens, Constants.NUMBER_OF_QUERY_RESULTS, true);
     }
 
     // get similar documents to the given document
     // this is done by getting the words in the document and uses them as the query
     // in a normal search
     public List<Result> getSimilarDocuments(Integer docId) throws IOException {
-        System.out.println("Getting similar documents for doc: " + docId);
+        System.out.println("Search for similar documents to doc: " + docId);
 
         Set<Integer> docWordIds = retriever.getDocumentWordIds(docId);
 
@@ -59,14 +59,38 @@ public class Engine {
             return new ArrayList<>();
         }
 
-        List<SearchToken> searchTokens = docWordIds.stream().map(wordId -> new SearchToken(List.of(wordId)))
-                .collect(Collectors.toList());
+        List<SearchToken> searchTokens = getSearchTokens(docId, docWordIds);
 
-        return search(searchTokens, Constants.NUMBER_OF_RELEVANT_DOCS_RESULTS);
+        return search(searchTokens, Constants.NUMBER_OF_RELEVANT_DOCS_RESULTS, false);
+    }
+
+    // create the search tokens for every word in the document with the associated frequency
+    private List<SearchToken> getSearchTokens(Integer docId, Set<Integer> wordIDs) throws IOException {
+        List<SearchToken> searchTokens = new ArrayList<SearchToken>();
+
+        for (Integer wordId : wordIDs) {
+            Map<Integer, Posting> titlePostings = retriever.getTitlePostings(wordId);
+            Map<Integer, Posting> bodyPostings = retriever.getBodyPostings(wordId);
+
+            Posting titlePosting = titlePostings.get(docId);
+            Posting bodyPosting = bodyPostings.get(docId);
+
+            int tf_title = titlePosting != null ? titlePosting.getFrequency() : 0;
+            int tf_body = bodyPosting != null ? bodyPosting.getFrequency() : 0;
+
+            List<Integer> tokens = new ArrayList<Integer>();
+            for (int i = 0; i < tf_title + tf_body; i++) {
+                tokens.add(wordId);
+            }
+
+            searchTokens.add(new SearchToken(tokens));
+        }
+
+        return searchTokens;
     }
 
     // search for the given query
-    public List<Result> search(List<SearchToken> searchTokens, int numberOfResults) throws IOException {
+    public List<Result> search(List<SearchToken> searchTokens, int numberOfResults, boolean favorTitleMatches) throws IOException {
         int vocabularySize = retriever.getNumberOfWords();
         int numberOfDocs = retriever.getNumberOfDocuments();
 
@@ -81,7 +105,7 @@ public class Engine {
         // calculate the document vectors
         Set<Integer> queryWordIdSet = new HashSet<Integer>(queryWordIds);
         Map<Integer, double[]> documentVectors = getDocumentVectors(relevantDocuments, queryWordIdSet, vocabularySize,
-                numberOfDocs);
+                numberOfDocs, favorTitleMatches);
 
         // calculate the document similarities between each document vector and the
         // query vector
@@ -185,18 +209,19 @@ public class Engine {
     // calculate the document vectors for the relevant documents
     private Map<Integer, double[]> getDocumentVectors(Set<Integer> relevantDocuments, Set<Integer> queryWordIds,
             int vocabularySize,
-            int numberOfDocs)
+            int numberOfDocs,
+            boolean favorTitleMatches)
             throws IOException {
         Map<Integer, double[]> documentVectors = new HashMap<Integer, double[]>();
         for (Integer docId : relevantDocuments) {
-            double[] documentVector = calculateDocumentVector(docId, queryWordIds, vocabularySize, numberOfDocs);
+            double[] documentVector = calculateDocumentVector(docId, queryWordIds, vocabularySize, numberOfDocs, favorTitleMatches);
             documentVectors.put(docId, documentVector);
         }
         return documentVectors;
     }
 
     // calculate the document vector for a document
-    private double[] calculateDocumentVector(Integer docId, Set<Integer> queryWordIds, int vocabularySize, int N)
+    private double[] calculateDocumentVector(Integer docId, Set<Integer> queryWordIds, int vocabularySize, int N, boolean favorTitleMatches)
             throws IOException {
         double[] documentVector = new double[vocabularySize];
 
@@ -223,7 +248,7 @@ public class Engine {
             // if the word is in the query, increase the importance of the word in the title
             // this is done by multiplying the tf-idf value with a weight
             // if the title does not contain the word, the tf_idf will remain zero
-            if (queryWordIds.contains(wordId)) {
+            if (queryWordIds.contains(wordId) && favorTitleMatches) {
                 tf_idf_title *= Constants.TITLE_WEIGHT;
             }
 
