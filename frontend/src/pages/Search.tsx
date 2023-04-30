@@ -87,7 +87,7 @@ const Search = (): ReactElement => {
                 </div>
             )}
 
-            {searchResults && searchResults.results.length === 0 && !isLoading && error && (
+            {(!searchResults || searchResults.results.length === 0) && !isLoading && error && (
                 <div className={classes.text}>
                     <Typography variant="caption">{error}</Typography>
                 </div>

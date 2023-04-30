@@ -1,5 +1,4 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import SearchBar from "../components/SearchBar";
 import { CircularProgress, Link, Typography } from "@mui/material";
 import {
     createStyles,
@@ -7,6 +6,7 @@ import {
     Theme,
 } from '@material-ui/core';
 import { SearchResult, SearchResults } from "../types/ResultType";
+import { Link as RouterLink } from "react-router-dom";
 import ResultCard from "../components/ResultCard";
 import { useParams } from "react-router-dom";
 import { getSimilarDocuments } from "../api/SimilarDocumentsApi";
@@ -96,7 +96,7 @@ const SimilarDocuments = (): ReactElement => {
     return (
         <div style={{ marginTop: 30, marginBottom: 100 }}>
             <div className={classes.back}>
-                <Link href="/" variant="body2">Back to search</Link>
+                <Link component={RouterLink} to="/" variant="body2">Back to search</Link>
             </div>
 
             {isLoading && <Spinner />}

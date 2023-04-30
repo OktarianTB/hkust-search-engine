@@ -9,6 +9,7 @@ import {
     Typography,
 } from '@material-ui/core';
 import { Container, Link } from '@mui/material';
+import { Link as RouterLink } from "react-router-dom";
 import { SearchResult } from '../types/ResultType';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -70,6 +71,7 @@ const ResultCard = ({ searchResult }: ResultCardProps) => {
                 />
                 <CardContent>
                     <div className={classes.properties}>
+                        <Typography variant="subtitle2">DocId: {docId}</Typography>
                         <Typography variant="subtitle2">Page size: {properties.size}</Typography>
                         <Typography variant="subtitle2">Last modified: {properties.lastModifiedAt}</Typography>
                     </div>
@@ -100,7 +102,7 @@ const ResultCard = ({ searchResult }: ResultCardProps) => {
                         </div>
                     </div>
                     <div>
-                        <Link href={`/similar-documents/${docId}`} variant="caption">Search for similar documents</Link>
+                        <Link component={RouterLink} to={`/similar-documents/${docId}`} variant="caption">Search for similar documents</Link>
                     </div>
                 </CardContent>
             </Card>
