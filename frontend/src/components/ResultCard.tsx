@@ -99,13 +99,15 @@ const ResultCard = ({ searchResult, index }: ResultCardProps) => {
                     <div className={classes.linkContainer}>
                         <Typography variant="subtitle2">Parent links:</Typography>
                         <div className={classes.links}>
-                            {parentLinks.map((link) => <Typography key={link} variant="caption">- {link}</Typography>)}
+                            {parentLinks.slice(0, 10).map((link) => <Typography key={link} variant="caption">- {link}</Typography>)}
+                            {parentLinks.length >= 10 && <Typography variant="caption">+ {parentLinks.length - 10} other parent links</Typography>}
                         </div>
                     </div>
                     <div className={classes.linkContainer}>
                         <Typography variant="subtitle2">Child links:</Typography>
                         <div className={classes.links}>
-                            {childLinks.map((link) => <Typography key={link} variant="caption">- {link}</Typography>)}
+                            {childLinks.slice(0, 10).map((link) => <Typography key={link} variant="caption">- {link}</Typography>)}
+                            {childLinks.length >= 10 && <Typography variant="caption">+ {childLinks.length - 10} other child links</Typography>}
                         </div>
                     </div>
                     <div>
