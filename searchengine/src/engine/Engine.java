@@ -64,7 +64,8 @@ public class Engine {
         return search(searchTokens, Constants.NUMBER_OF_RELEVANT_DOCS_RESULTS, false);
     }
 
-    // create the search tokens for every word in the document with the associated frequency
+    // create the search tokens for every word in the document with the associated
+    // frequency
     private List<SearchToken> getSearchTokens(Integer docId, Set<Integer> wordIDs) throws IOException {
         List<SearchToken> searchTokens = new ArrayList<SearchToken>();
 
@@ -90,7 +91,8 @@ public class Engine {
     }
 
     // search for the given query
-    public List<Result> search(List<SearchToken> searchTokens, int numberOfResults, boolean favorTitleMatches) throws IOException {
+    public List<Result> search(List<SearchToken> searchTokens, int numberOfResults, boolean favorTitleMatches)
+            throws IOException {
         int vocabularySize = retriever.getNumberOfWords();
         int numberOfDocs = retriever.getNumberOfDocuments();
 
@@ -214,14 +216,16 @@ public class Engine {
             throws IOException {
         Map<Integer, double[]> documentVectors = new HashMap<Integer, double[]>();
         for (Integer docId : relevantDocuments) {
-            double[] documentVector = calculateDocumentVector(docId, queryWordIds, vocabularySize, numberOfDocs, favorTitleMatches);
+            double[] documentVector = calculateDocumentVector(docId, queryWordIds, vocabularySize, numberOfDocs,
+                    favorTitleMatches);
             documentVectors.put(docId, documentVector);
         }
         return documentVectors;
     }
 
     // calculate the document vector for a document
-    private double[] calculateDocumentVector(Integer docId, Set<Integer> queryWordIds, int vocabularySize, int N, boolean favorTitleMatches)
+    private double[] calculateDocumentVector(Integer docId, Set<Integer> queryWordIds, int vocabularySize, int N,
+            boolean favorTitleMatches)
             throws IOException {
         double[] documentVector = new double[vocabularySize];
 
